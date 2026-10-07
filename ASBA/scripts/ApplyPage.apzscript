@@ -1,11 +1,185 @@
+// ==============================
+// APPLY PAGE (APPLY FOR IPO)
+// Screen: ApplyPage | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const APP_P = "ASBA__ApplyPage__";
+
 apz.app.ApplyPage = {
 
+    // Back to the dashboard without applying.
     cancel: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Moves to the Apply review screen, carrying all bid rows
+    // plus the account / applicant / priority / declaration selections.
     Continuee: () => {
+        apz.app.ApplyPage.collectBids();
+
+        // Dropdown reads use the visible input value (same reason
+        // as the applicant form - getElmValue stays "" otherwise).
+        let visVal = (id) => {
+            let elm = document.getElementById(APP_P + id);
+            return (elm && elm.value) || "";
+        };
+
+        // Applicant + account context for this application.
+        apz.app.applyApplicant = {
+            account: visVal("el_dpd_2"),
+            nickname: visVal("el_dpd_3"),
+            investorType: visVal("el_dpd_4")
+        };
+
+        // Priority dropdown: visible input value (same reason as
+        // the applicant form - getElmValue stays "" otherwise).
+        let prioElm = document.getElementById(APP_P + "el_dpd_5");
+        apz.app.applyPriority = (prioElm && prioElm.value) || "";
+
+        let declElm = document.getElementById(APP_P + "el_cbx_1");
+        apz.app.applyDeclaration = declElm ? !!declElm.checked : false;
+
         apz.launchScreen({ appId: apz.appId, scr: "ApplyReview" });
+    },
+
+    // Clones the last bid row of ct_lst_35 for one more bid.
+    // Cloned ids get an _r<N> suffix so getElementById stays unique.
+    addBidRow: (element) => {
+        let list = document.getElementById(APP_P + "ct_lst_35");
+
+        if (!list) {
+            return;
+        }
+
+        let ul = list.querySelector("ul");
+
+        if (!ul) {
+            return;
+        }
+
+        let rows = ul.querySelectorAll('li[rowno]');
+        let dataRows = [];
+
+        rows.forEach((row) => {
+            // Header row holds labels only - real bid rows
+            // always contain the quantity input.
+            if (row.querySelector("input[id*='el_inp_3']")) {
+                dataRows.push(row);
+            }
+        });
+
+        if (!dataRows.length) {
+            return;
+        }
+
+        let template = dataRows[dataRows.length - 1];
+        let nextNo = dataRows.length;
+        let clone = template.cloneNode(true);
+
+        clone.setAttribute("rowno", String(nextNo));
+
+        clone.querySelectorAll("[id]").forEach((elm) => {
+            elm.id = elm.id + "_r" + nextNo;
+        });
+
+        clone.querySelectorAll("input[type='text']").forEach((inp) => {
+            inp.value = "";
+        });
+
+        clone.querySelectorAll("input[type='CHECKBOX']").forEach((cbx) => {
+            cbx.checked = false;
+        });
+
+        clone.querySelectorAll("span[id$='_txtcnt']").forEach((sp) => {
+            sp.textContent = "";
+        });
+
+        // BID No for the new row (1-based display).
+        let bidNo = clone.querySelector("span[id*='el_txt_68']");
+
+        if (bidNo) {
+            bidNo.textContent = String(nextNo + 1);
+        }
+
+        ul.appendChild(clone);
+    },
+
+    // Reads every bid row into apz.app.bidRows for the Review screen.
+    collectBids: () => {
+        let list = document.getElementById(APP_P + "ct_lst_35");
+        let bids = [];
+
+        if (list) {
+            let rows = list.querySelectorAll('li[rowno]');
+
+            rows.forEach((row) => {
+                // Skip the header row (it holds labels, no inputs).
+                if (!row.querySelector("input[id*='el_inp_3']")) {
+                    return;
+                }
+
+                let val = (sel) => {
+                    let elm = row.querySelector(sel);
+                    return elm ? (elm.value || "") : "";
+                };
+
+                let cutoffElm = row.querySelector("input[id*='el_txt_80']");
+
+                bids.push({
+                    bidNo: (row.querySelector("span[id*='el_txt_68']") || {}).textContent || "",
+                    quantity: val("input[id*='el_inp_3']"),
+                    price: val("input[id*='el_inp_4']"),
+                    cutoff: cutoffElm ? !!cutoffElm.checked : false,
+                    discount: val("input[id*='el_txt_72']"),
+                    amount: ((row.querySelector("span[id*='el_txt_73']") || {}).textContent || "")
+                });
+            });
+        }
+
+        apz.app.bidRows = bids;
+        console.log("Bid Rows :", apz.app.bidRows);
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the tapped IPO row (stored by the
+// dashboard Apply button in apz.app.selectedIPO) into
+// the summary strip and IPO section of this screen.
+// ==============================
+
+apz.app.onLoad_ApplyPage = () => {
+
+    let ipo = apz.app.selectedIPO;
+
+    if (!ipo) {
+        return;
     }
 
+    let paint = (id, value) => {
+        let elm = document.getElementById(APP_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Summary strip (sc_row_65).
+    paint("el_txt_54_txtcnt", ipo["IPO Details"]);
+    paint("el_txt_55_txtcnt", ipo["Price Band"]);
+    paint("el_txt_56_txtcnt", ipo["Min Bid Qty"]);
+    paint("el_txt_57_txtcnt", ipo["Bid Multiple"]);
+    paint("el_txt_58_txtcnt", ipo["Min Investment"]);
+
+    // IPO section (sc_row_71/72/73, document order).
+    paint("el_txt_60_txtcnt", ipo["IPO Details"]);
+    paint("el_txt_62_txtcnt", ipo["Bid Open"]);
+    paint("el_txt_61_txtcnt", ipo["Bid Close"]);
+
+    // NOTE: Bid Details cells (el_txt_68/73/75/76) are NOT
+    // painted yet - their labels are unconfirmed. Tell me what
+    // each should show and it will be added here.
 };

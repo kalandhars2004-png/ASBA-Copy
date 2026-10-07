@@ -1,11 +1,121 @@
+// ==============================
+// APPLY REVIEW
+// Screen: ApplyReview | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const APR_P = "ASBA__ApplyReview__";
+
 apz.app.ApplyReview = {
 
+    // Back to the IPO list to change the selected IPO.
+    // (The old Apply screen was removed; ApplyPage is its replacement.)
     edit: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "Apply" });
+        apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
     },
 
+    // Freezes a request id + timestamp onto the shared data
+    // and moves to the Apply Success screen.
     confirm: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "ApplySuccess" });
-    }
+        let now = new Date();
 
+        let requestId =
+            "ASBA-" +
+            now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            String(now.getDate()).padStart(2, "0") +
+            "-" +
+            String(now.getHours()).padStart(2, "0") +
+            String(now.getMinutes()).padStart(2, "0") +
+            String(now.getSeconds()).padStart(2, "0") +
+            "-" +
+            Math.floor(1000 + Math.random() * 9000);
+
+        let initiatedDateTime =
+            String(now.getDate()).padStart(2, "0") +
+            "-" +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            now.getFullYear() +
+            " " +
+            String(now.getHours()).padStart(2, "0") +
+            ":" +
+            String(now.getMinutes()).padStart(2, "0") +
+            ":" +
+            String(now.getSeconds()).padStart(2, "0");
+
+        apz.app.applyData = {
+            requestId: requestId,
+            initiatedDateTime: initiatedDateTime
+        };
+
+        apz.launchScreen({ appId: apz.appId, scr: "ApplySuccess" });
+    },
+
+    // Block Amount = sum of parseable bid amounts; falls back to
+    // the first bid amount; blank when nothing parses.
+    blockAmount: () => {
+        let bids = apz.app.bidRows || [];
+        let total = 0;
+        let parsed = 0;
+
+        bids.forEach((bid) => {
+            let n = parseFloat(String(bid.amount || "").replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(n)) {
+                total += n;
+                parsed++;
+            }
+        });
+
+        if (parsed > 0) {
+            return String(Math.round(total * 100) / 100);
+        }
+
+        return bids.length ? (bids[0].amount || "") : "";
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the tapped IPO (apz.app.selectedIPO),
+// the applicant (apz.app.applicationData, if any) and the
+// first bid row (apz.app.bidRows). Bid value cells follow
+// the row-42 header order: No / Quantity / Price / Amount.
+// ==============================
+
+apz.app.onLoad_ApplyReview = () => {
+
+    let ipo = apz.app.selectedIPO || {};
+    let applicant = apz.app.applicationData || {};
+    let picked = apz.app.applyApplicant || {};
+    let bids = apz.app.bidRows || [];
+    let firstBid = bids.length ? bids[0] : {};
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(APR_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Applicant section: nickname picked on the Apply page wins
+    // (it is the applicant for THIS application); PAN comes from
+    // the added applicant record when present.
+    paint("el_label_2_txtcnt", picked.nickname || applicant.applicantName);
+    paint("el_label_3_txtcnt", applicant.pan);
+    paint("el_label_6_txtcnt", ipo["IPO Details"]);
+
+    // First bid row values.
+    paint("el_label_11_txtcnt", firstBid.bidNo);
+    paint("el_label_12_txtcnt", firstBid.quantity);
+    paint("el_label_13_txtcnt", firstBid.price);
+    paint("el_label_14_txtcnt", firstBid.amount);
+
+    // Totals + priority.
+    paint("el_txt_37_txtcnt", apz.app.ApplyReview.blockAmount());
+    paint("el_txt_41_txtcnt", apz.app.applyPriority);
 };

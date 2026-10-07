@@ -1,11 +1,64 @@
+// ==============================
+// APPLY SUCCESS
+// Screen: ApplySuccess | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const APS_P = "ASBA__ApplySuccess__";
+
 apz.app.ApplySuccess = {
 
+    // Back to the dashboard (flow ends here).
     Dashboard: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Starts a fresh IPO application.
     ApplyNewIPO: () => {
         apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints the request (frozen by confirm() on the
+// Review screen) and the first bid row. Bid value cells
+// follow document order: No / Quantity / Price / Amount.
+// ==============================
+
+apz.app.onLoad_ApplySuccess = () => {
+
+    let apply = apz.app.applyData || {};
+    let bids = apz.app.bidRows || [];
+    let firstBid = bids.length ? bids[0] : {};
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(APS_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Request ID / Initiated Date & Time.
+    paint("el_txt_4_txtcnt", apply.requestId);
+    paint("el_txt_6_txtcnt", apply.initiatedDateTime);
+
+    // First bid row values.
+    paint("el_txt_27_txtcnt", firstBid.bidNo);
+    paint("el_txt_28_txtcnt", firstBid.quantity);
+    paint("el_txt_29_txtcnt", firstBid.price);
+    paint("el_txt_30_txtcnt", firstBid.amount);
+
+    // Block Amount (same rule as Review; guarded in case this
+    // screen is reached without passing Review first).
+    let blockAmount = (apz.app.ApplyReview && apz.app.ApplyReview.blockAmount) ?
+        apz.app.ApplyReview.blockAmount() : "";
+
+    paint("el_txt_32_txtcnt", blockAmount);
+
+    // Priority.
+    paint("el_txt_36_txtcnt", apz.app.applyPriority);
 };

@@ -1,3 +1,14 @@
+// ==============================
+// VIEW APPLICATION
+// Screen: View | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const VIEW_P = "ASBA__View__";
+
 apz.app.View = {
 
     Back: () => {
@@ -7,5 +18,53 @@ apz.app.View = {
     dashboard: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints the application picked on the dashboard
+// (My Applications row, stored as apz.app.selectedApplication).
+// IPO block cells (sc_col_54-57) get IPO Details / Applied
+// Date / BID Amount / BID Status in document order. Bid cells
+// show slot 1 with the application amount (no per-bid
+// breakdown exists on the application record).
+// ==============================
+
+apz.app.onLoad_View = () => {
+
+    let app = apz.app.selectedApplication || {};
+    let applicant = apz.app.applicationData || {};
+
+    let text = (id, value) => {
+        let elm = document.getElementById(VIEW_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Header request/application value.
+    text("el_txt_44_txtcnt", app["Application ID"]);
+
+    // Applicant block (added-applicant record when present).
+    text("el_label_1", applicant.nickname);
+    text("el_label_2", applicant.applicantName);
+
+    // Application ID / Applied Date pair.
+    text("el_label_13", app["Application ID"]);
+    text("el_label_14", app["Applied Date"]);
+
+    // IPO block (bare columns).
+    text("sc_col_54_li", app["IPO Details"]);
+    text("sc_col_55_li", app["Applied Date"]);
+    text("sc_col_56_li", app["BID Amount"]);
+    text("sc_col_57_li", app["BID Status"]);
+
+    // Single bid slot from the application amount.
+    text("el_txt_21_txtcnt", "1");
+    text("el_txt_22_txtcnt", "");
+    text("el_txt_23_txtcnt", "");
+    text("el_txt_24_txtcnt", app["BID Amount"]);
+
+    // Block amount + priority (priority default kept by design).
+    text("el_txt_26_txtcnt", app["BID Amount"]);
 };

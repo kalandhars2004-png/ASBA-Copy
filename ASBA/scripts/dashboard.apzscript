@@ -95,11 +95,79 @@ apz.app.dashboard = {
     },
 
     EditApplicant: () => {
+        // Applicant row tapped via the 3-dot menu (popupRow set by
+        // showApplicantPopup). Forward that record to the edit form.
+        let row = apz.app.dashboard.popupRow;
+        let list = apz.app.applicantList || [];
+
+        if (row !== undefined && row !== null && row >= 0 && list[row]) {
+            apz.app.editApplicant = list[row];
+            console.log("Edit Applicant :", apz.app.editApplicant);
+        }
+
         apz.launchScreen({ appId: apz.appId, scr: "EditApplicant" });
     },
 
     withdraw: () => {
         apz.launchScreen({ appId: apz.appId, scr: "Withdraw" });
+    },
+
+    // My-Applications row Action router. The row's own Action value
+    // decides: "Withdraw" goes to Withdraw, anything else (View)
+    // goes to the View screen with that row's data.
+    // Wired as rowAction(this) on the row Action button.
+    rowAction: (element) => {
+        let row = apz.app.dashboard.getRowNo(element);
+        let list = apz.app.applicationList;
+
+        if (!list || !Array.isArray(list) || !list[row]) {
+            apz.dispMsg({
+                type: "E",
+                message: "Application list not available"
+            });
+            return;
+        }
+
+        let record = list[row];
+
+        // Selected application, shared with View / Withdraw screens.
+        apz.app.selectedApplication = record;
+
+        console.log("Selected Application :", apz.app.selectedApplication);
+
+        if ((record["Action"] || "") === "Withdraw") {
+            apz.launchScreen({ appId: apz.appId, scr: "Withdraw" });
+        } else {
+            apz.launchScreen({ appId: apz.appId, scr: "View" });
+        }
+    },
+
+    getRowNo: (element) => {
+        if (!element) {
+            return -1;
+        }
+
+        if (element.getAttribute) {
+            let raw = element.getAttribute("rowno");
+
+            if (raw !== null && raw !== "") {
+                return Number(raw);
+            }
+        }
+
+        if (element.closest) {
+            let li = element.closest("li");
+
+            if (li) {
+                let liRow = li.getAttribute("rowno");
+
+                if (liRow !== null && liRow !== "") {
+                    return Number(liRow);
+                }
+            }
+        }
+
+        return -1;
     },
 
     Apply: (element) => {
@@ -288,6 +356,10 @@ apz.app.dashboard = {
             });
             return;
         }
+
+        // Stored for the row Action router (View vs Withdraw).
+        let data = resp.res["ASBA__getAllApplication_Res"];
+        apz.app.applicationList = (data && data.data) ? data.data : [];
     },
 
     manageApplicationCB: (resp) => {
@@ -298,6 +370,10 @@ apz.app.dashboard = {
             });
             return;
         }
+
+        // Stored for the Edit menu (row record by popupRow).
+        let data = resp.res["ASBA__ManageApplication_Res"];
+        apz.app.applicantList = (data && data.data) ? data.data : [];
     },
 
     dashboardCB: (resp) => {

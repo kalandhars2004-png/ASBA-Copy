@@ -1,11 +1,110 @@
+// ==============================
+// EDIT APPLICANT + DEMAT
+// Screen: EditApplicant | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const EAP_P = "ASBA__EditApplicant__";
+
 apz.app.EditApplicant = {
 
+    // Back to the dashboard without saving.
     cancel: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Collects the edited form into apz.app.editData (plus a fresh
+    // request id / timestamp) and moves to EditedApplicantReview.
     ContinueEdit: () => {
+        let rec = apz.app.editApplicant || {};
+
+        let text = (id) => {
+            let elm = document.getElementById(EAP_P + id);
+            return elm ? elm.textContent.trim() : "";
+        };
+
+        let val = (id) => {
+            let elm = document.getElementById(EAP_P + id);
+            return elm ? (elm.value || "") : "";
+        };
+
+        let prioElm = document.getElementById(EAP_P + "el_dpd_5");
+        let declElm = document.getElementById(EAP_P + "el_cbx_3");
+
+        // Request id + approved timestamp, same scheme as add flow.
+        let now = new Date();
+
+        let pad = (n) => String(n).padStart(2, "0");
+
+        apz.app.editData = {
+            applicantId: text("el_txt_60_txtcnt"),
+            applicantName: text("el_txt_61_txtcnt") || rec["Applicant Name"] || "",
+            pan: text("el_txt_62_txtcnt") || rec["PAN"] || "",
+            nickname: val("el_inp_3"),
+            depositoryType: rec["Deposit Type"] || "",
+            clientId: val("el_inp_4"),
+            dpId: rec["DPIDClientID"] || "",
+            priority: (prioElm && prioElm.value) || "",
+            declaration: declElm ? !!declElm.checked : false,
+            requestId:
+                "ASBA-" + now.getFullYear() + pad(now.getMonth() + 1) +
+                pad(now.getDate()) + "-" + pad(now.getHours()) +
+                pad(now.getMinutes()) + pad(now.getSeconds()) + "-" +
+                Math.floor(1000 + Math.random() * 9000),
+            approvedDateTime:
+                pad(now.getDate()) + "-" + pad(now.getMonth() + 1) +
+                "-" + now.getFullYear() + " " + pad(now.getHours()) +
+                ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds())
+        };
+
+        console.log("Edit Data :", apz.app.editData);
+
         apz.launchScreen({ appId: apz.appId, scr: "EditedApplicantReview" });
     }
+};
 
+
+// ==============================
+// ONLOAD - pre-fills the form from the applicant record
+// tapped on the dashboard (apz.app.editApplicant). Record
+// fields: Applicant Nickname / Applicant Name / PAN /
+// Deposit Type / DPIDClientID.
+// ==============================
+
+apz.app.onLoad_EditApplicant = () => {
+
+    let rec = apz.app.editApplicant;
+
+    if (!rec) {
+        return;
+    }
+
+    let setText = (id, value) => {
+        let elm = document.getElementById(EAP_P + id);
+        if (elm) {
+            elm.textContent = value || "";
+        }
+    };
+
+    let setVal = (id, value) => {
+        let elm = document.getElementById(EAP_P + id);
+        if (elm) {
+            elm.value = value || "";
+        }
+    };
+
+    // Display values.
+    setText("el_txt_61_txtcnt", rec["Applicant Name"]);
+    setText("el_txt_62_txtcnt", rec["PAN"]);
+
+    // Editable values (nickname + client id from DPIDClientID).
+    setVal("el_inp_3", rec["Applicant Nickname"]);
+    setVal("el_inp_4", rec["DPIDClientID"]);
+
+    // NOTE: depository radio options are generic (Option 1 / 2),
+    // so no pre-select is possible - the record value travels
+    // through opaquely in apz.app.editData instead.
 };

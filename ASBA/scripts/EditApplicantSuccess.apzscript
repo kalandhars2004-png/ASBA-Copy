@@ -1,11 +1,67 @@
+// ==============================
+// EDIT APPLICANT SUCCESS
+// Screen: EditApplicantSuccess | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const EAS_P = "ASBA__EditApplicantSuccess__";
+
 apz.app.EditApplicantSuccess = {
 
+    // Back to the dashboard (flow ends here).
     Dashboard: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Starts a fresh applicant form.
     AddNewApplicant: () => {
         apz.launchScreen({ appId: apz.appId, scr: "AddApplicantAndDemat" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints apz.app.editData. Cell order matches the
+// design labels: Request ID / Approved Date, then
+// Applicant ID / Nickname / Applicant Name, then
+// Depository Type / DP ID / Client ID, then PAN, then Priority.
+// ==============================
+
+apz.app.onLoad_EditApplicantSuccess = () => {
+
+    let data = apz.app.editData;
+
+    if (!data) {
+        return;
+    }
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(EAS_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Request ID / Approved Date & Time.
+    paint("el_txt_4_txtcnt", data.requestId);
+    paint("el_txt_6_txtcnt", data.approvedDateTime);
+
+    // Applicant ID / Nickname / Applicant Name.
+    paint("el_txt_11_txtcnt", data.applicantId);
+    paint("el_txt_12_txtcnt", data.nickname);
+    paint("el_txt_13_txtcnt", data.applicantName);
+
+    // Depository Type / DP ID / Client ID.
+    paint("el_txt_17_txtcnt", data.depositoryType);
+    paint("el_txt_18_txtcnt", data.dpId);
+    paint("el_txt_19_txtcnt", data.clientId);
+
+    // PAN.
+    paint("el_txt_21_txtcnt", data.pan);
+
+    // Priority.
+    paint("el_txt_28_txtcnt", data.priority);
 };
