@@ -182,9 +182,28 @@ apz.app.onLoad_CommonReviewPage = () => {
         paint("el_txt_68_txtcnt", firstBid.price);
         paint("el_txt_69_txtcnt", firstBid.amount);
 
-        // Block Amount (same rule as ApplyReview; guarded) + Priority.
-        let blockAmount = (apz.app.ApplyReview && apz.app.ApplyReview.blockAmount) ?
-            apz.app.ApplyReview.blockAmount() : "";
+        // Block Amount: sum of parseable bid amounts, else first
+        // amount, else blank (local rule - no cross-screen call).
+        let blockAmount = "";
+        {
+            let total = 0;
+            let parsed = 0;
+
+            bids.forEach((bid) => {
+                let n = parseFloat(String(bid.amount || "").replace(/[^0-9.]/g, ""));
+
+                if (!isNaN(n)) {
+                    total += n;
+                    parsed++;
+                }
+            });
+
+            if (parsed > 0) {
+                blockAmount = String(Math.round(total * 100) / 100);
+            } else if (bids.length) {
+                blockAmount = bids[0].amount || "";
+            }
+        }
 
         paint("el_txt_71_txtcnt", blockAmount);
         paint("el_txt_75_txtcnt", apz.app.applyPriority);
