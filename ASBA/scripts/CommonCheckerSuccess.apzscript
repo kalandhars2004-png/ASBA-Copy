@@ -1,0 +1,209 @@
+// ==============================
+// COMMON CHECKER SUCCESS
+// Screen: CommonCheckerSuccess | Layout: NewLayout
+// Single landing for checker Accept decisions. The decide()
+// action sets apz.app.checkerDiv to the checked div; onLoad
+// shows only that div and paints the decided snapshot
+// (apz.app.checkerDecision). Static samples fill blanks when
+// opened directly.
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CCS_P = "ASBA__CommonCheckerSuccess__";
+
+apz.app.CommonCheckerSuccess = {
+
+    // Back to the dashboard (flow ends here).
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    // Starts a fresh IPO application.
+    AddNewIPO: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
+    },
+
+    // Downloads the shown decision as a text summary file.
+    downloadDetails: () => {
+        let req = apz.app.checkerDecision || {};
+
+        let line = (k, v) => k + ": " + (v === undefined || v === null ? "" : String(v));
+
+        let rows = [
+            "ASBA Checker Decision",
+            line("Request ID", req.requestId),
+            line("Date", req.decidedOn || req.initiatedDateTime),
+            line("Status", req.status),
+            line("Nickname", req.nickname),
+            line("Applicant Name", req.applicantName),
+            line("PAN", req.pan),
+            line("Depository Type", req.depositoryType),
+            line("DP ID", req.dpId),
+            line("Client ID", req.clientId),
+            line("Investor Type", req.investorType),
+            line("Debit Account", req.debitAccount),
+            line("IPO Name", req.ipoName || req["IPO Details"]),
+            line("Block Amount", req.blockAmount || req["BID Amount"]),
+            line("Priority", req.priority),
+            line("Remarks", req.remarks)
+        ];
+
+        let blob = new Blob([rows.join("\n")], { type: "text/plain" });
+        let url = URL.createObjectURL(blob);
+        let link = document.createElement("a");
+
+        link.href = url;
+        link.download = "ASBA_" + (req.requestId || "decision") + ".txt";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+};
+
+
+// ==============================
+// ONLOAD - shows + paints the decided div.
+// ==============================
+
+apz.app.onLoad_CommonCheckerSuccess = () => {
+
+    let divs = [
+        "CheckerIPODiv", "EditApplicantDiv", "DeleteApplicantDiv",
+        "ASBARegisstrationDiv", "ApplicantDiv", "WithdrawDiv"
+    ];
+    let div = apz.app.checkerDiv || "ASBARegisstrationDiv";
+
+    if (divs.indexOf(div) < 0) {
+        div = "ASBARegisstrationDiv";
+    }
+
+    divs.forEach((name) => {
+        let elm = document.getElementById(CCS_P + name);
+
+        if (!elm) {
+            return;
+        }
+
+        if (name === div) {
+            apz.show(CCS_P + name);
+        } else {
+            apz.hide(CCS_P + name);
+        }
+    });
+
+    // Static sample (same rows as the checker queues).
+    let req = apz.app.checkerDecision || {
+        requestId: "ASBA-20250812-100001",
+        initiatedDateTime: "12-08-2025 10:00:00",
+        nickname: "KDX",
+        applicantName: "Kalandhar Mohamed",
+        pan: "ABCDE1234F",
+        depositoryType: "NSDL",
+        dpId: "IN300001",
+        clientId: "12345678",
+        priority: "High"
+    };
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(CCS_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Shared header: Request ID / Initiated Date & Time.
+    paint("el_txt_4_txtcnt", req.requestId);
+    paint("el_txt_6_txtcnt", req.initiatedDateTime);
+
+    if (div === "CheckerIPODiv") {
+        // Nickname / Applicant Name / PAN.
+        paint("el_txt_9_txtcnt", req.nickname);
+        paint("el_txt_11_txtcnt", req.applicantName);
+        paint("el_txt_13_txtcnt", req.pan);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_15_txtcnt", req.depositoryType);
+        paint("el_txt_17_txtcnt", req.dpId);
+        paint("el_txt_19_txtcnt", req.clientId);
+
+        // Investor Type / Debit Account / IPO Name.
+        paint("el_txt_21_txtcnt", req.investorType);
+        paint("el_txt_23_txtcnt", req.debitAccount);
+        paint("el_txt_25_txtcnt", req.ipoName || req["IPO Details"]);
+
+        // First bid row (No / Quantity / Price / Amount).
+        let bids = req.bids || [];
+        let firstBid = bids.length ? bids[0] : {};
+
+        paint("el_txt_31_txtcnt", firstBid.no);
+        paint("el_txt_32_txtcnt", firstBid.quantity);
+        paint("el_txt_33_txtcnt", firstBid.price);
+        paint("el_txt_34_txtcnt", firstBid.amount);
+
+        // Block Amount + Priority.
+        paint("el_txt_36_txtcnt", req.blockAmount || req["BID Amount"]);
+        paint("el_txt_37_txtcnt", req.blockAmount || req["BID Amount"]);
+        paint("el_txt_40_txtcnt", req.priority);
+    } else if (div === "EditApplicantDiv") {
+        // Applicant ID / Nickname / Applicant Name.
+        paint("el_txt_45_txtcnt", req.applicantId);
+        paint("el_txt_46_txtcnt", req.nickname);
+        paint("el_txt_47_txtcnt", req.applicantName);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_51_txtcnt", req.depositoryType);
+        paint("el_txt_52_txtcnt", req.dpId);
+        paint("el_txt_53_txtcnt", req.clientId);
+
+        // PAN + Priority.
+        paint("el_txt_55_txtcnt", req.pan);
+        paint("el_txt_62_txtcnt", req.priority);
+    } else if (div === "DeleteApplicantDiv") {
+        // Applicant ID / Nickname / Applicant Name.
+        paint("el_txt_67_txtcnt", req.applicantId);
+        paint("el_txt_68_txtcnt", req.nickname);
+        paint("el_txt_69_txtcnt", req.applicantName);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_73_txtcnt", req.depositoryType);
+        paint("el_txt_74_txtcnt", req.dpId);
+        paint("el_txt_75_txtcnt", req.clientId);
+
+        // PAN + Priority.
+        paint("el_txt_77_txtcnt", req.pan);
+        paint("el_txt_84_txtcnt", req.priority);
+    } else if (div === "ASBARegisstrationDiv") {
+        // Nickname / Applicant Name / CIF ID.
+        paint("el_txt_89_txtcnt", req.nickname);
+        paint("el_txt_90_txtcnt", req.applicantName);
+        paint("el_txt_91_txtcnt", req.cifId || req.clientId);
+
+        // Corporate ID / Corporate Name / PAN.
+        paint("el_txt_95_txtcnt", req.corporateId);
+        paint("el_txt_96_txtcnt", req.corporateName);
+        paint("el_txt_97_txtcnt", req.pan);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_101_txtcnt", req.depositoryType);
+        paint("el_txt_102_txtcnt", req.dpId);
+        paint("el_txt_103_txtcnt", req.clientId);
+
+        // Priority.
+        paint("el_txt_106_txtcnt", req.priority);
+    } else if (div === "ApplicantDiv") {
+        // Labels only on this div - Priority only.
+        paint("el_txt_116_txtcnt", req.priority);
+    } else if (div === "WithdrawDiv") {
+        // Nickname / IPO Details / Application ID + Amount slot.
+        paint("el_txt_122_txtcnt", req.nickname);
+        paint("el_txt_123_txtcnt", req.ipoName || req["IPO Details"]);
+        paint("el_txt_124_txtcnt", req.applicationId || req["Application ID"]);
+        paint("el_txt_125_txtcnt", req.blockAmount || req["BID Amount"]);
+
+        // Block Amount + Priority.
+        paint("el_txt_127_txtcnt", req.blockAmount || req["BID Amount"]);
+        paint("el_txt_131_txtcnt", req.priority);
+    }
+};
