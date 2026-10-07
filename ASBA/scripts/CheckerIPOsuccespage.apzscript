@@ -1,11 +1,78 @@
+// ==============================
+// CHECKER - IPO ACCEPTED PAGE
+// Screen: CheckerIPOsuccespage | Layout: NewLayout
+// Paints the decided IPO request snapshot
+// (apz.app.checkerDecision) written by the Accept action.
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CIS_P = "ASBA__CheckerIPOsuccespage__";
+
 apz.app.CheckerIPOsuccespage = {
 
+    // Back to the dashboard (flow ends here).
     Dashboard: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Starts a fresh IPO application.
     AddNewIPO: () => {
         apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints the accepted IPO request snapshot.
+// ==============================
+
+apz.app.onLoad_CheckerIPOsuccespage = () => {
+
+    let req = apz.app.checkerDecision;
+
+    if (!req) {
+        return;
+    }
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(CIS_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Request ID / Application ID / Approved Date & Time.
+    paint("el_txt_71_txtcnt", req.requestId);
+    paint("el_txt_73_txtcnt", req.applicationId);
+    paint("el_txt_109_txtcnt", req.approvedDateTime || req.decidedOn);
+
+    // Nickname / Applicant Name / PAN.
+    paint("el_txt_76_txtcnt", req.nickname);
+    paint("el_txt_78_txtcnt", req.applicantName);
+    paint("el_txt_80_txtcnt", req.pan);
+
+    // Depository Type / DP ID / Client ID.
+    paint("el_txt_82_txtcnt", req.depositoryType);
+    paint("el_txt_84_txtcnt", req.dpId);
+    paint("el_txt_86_txtcnt", req.clientId);
+
+    // Investor Type / Debit Account / IPO Name.
+    paint("el_txt_88_txtcnt", req.investorType);
+    paint("el_txt_90_txtcnt", req.debitAccount);
+    paint("el_txt_92_txtcnt", req.ipoName);
+
+    // First bid row (No / Quantity / Price / Amount).
+    let bids = req.bids || [];
+    let firstBid = bids.length ? bids[0] : {};
+
+    paint("el_txt_98_txtcnt", firstBid.no);
+    paint("el_txt_99_txtcnt", firstBid.quantity);
+    paint("el_txt_100_txtcnt", firstBid.price);
+    paint("el_txt_101_txtcnt", firstBid.amount);
+
+    // Block Amount (both amount cells) + Priority.
+    paint("el_txt_103_txtcnt", req.blockAmount);
+    paint("el_txt_104_txtcnt", req.blockAmount);
+    paint("el_txt_107_txtcnt", req.priority);
 };

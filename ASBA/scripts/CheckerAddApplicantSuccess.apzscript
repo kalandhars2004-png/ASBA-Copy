@@ -1,11 +1,173 @@
+// ==============================
+// CHECKER - APPLICANT REQUEST DETAIL
+// Screen: CheckerAddApplicantSuccess | Layout: NewLayout
+// Shows the same pending registration request as
+// CheckerRegistrationCheck (shared apz.app.checkerRegQueue)
+// with its own Accept / Reject pair. Remarks are read from
+// the remarks box on CheckerRegistrationCheck when present,
+// else optional here. Reject needs remarks.
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CAAS_P = "ASBA__CheckerAddApplicantSuccess__";
+
 apz.app.CheckerAddApplicantSuccess = {
 
+    // Shared pending queue (seeds the same static rows if the
+    // Registration check screen was never opened).
+    queue: () => {
+        if (!apz.app.checkerRegQueue) {
+            apz.app.checkerRegQueue = [
+                {
+                    requestId: "ASBA-20250812-100001",
+                    initiatedDateTime: "12-08-2025 10:00:00",
+                    nickname: "KDX",
+                    applicantName: "Kalandhar Mohamed",
+                    cifId: "CIF1001",
+                    corporateId: "CORP01",
+                    corporateName: "Kalandhar Traders",
+                    pan: "ABCDE1234F",
+                    depositoryType: "NSDL",
+                    dpId: "IN300001",
+                    clientId: "12345678",
+                    priority: "High",
+                    status: "PENDING",
+                    remarks: "",
+                    decidedOn: ""
+                },
+                {
+                    requestId: "ASBA-20250813-100002",
+                    initiatedDateTime: "13-08-2025 11:30:00",
+                    nickname: "VINO",
+                    applicantName: "Vino Kumar",
+                    cifId: "CIF1002",
+                    corporateId: "CORP02",
+                    corporateName: "Vino Enterprises",
+                    pan: "BCDEF2345G",
+                    depositoryType: "CDSL",
+                    dpId: "",
+                    clientId: "87654321",
+                    priority: "Medium",
+                    status: "PENDING",
+                    remarks: "",
+                    decidedOn: ""
+                }
+            ];
+        }
+
+        return apz.app.checkerRegQueue;
+    },
+
+    // Request under verification (first PENDING row).
+    current: () => {
+        let rows = apz.app.CheckerAddApplicantSuccess.queue();
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].status === "PENDING") {
+                return rows[i];
+            }
+        }
+
+        return null;
+    },
+
+    decide: (status, target) => {
+        let req = apz.app.CheckerAddApplicantSuccess.current();
+
+        if (!req) {
+            apz.dispMsg({
+                type: "E",
+                message: "No pending request to decide"
+            });
+            return;
+        }
+
+        // Remarks box lives on the Registration check screen; when
+        // deciding from here the checker would have typed them there.
+        // Reject still needs them - error out when missing.
+        let remarks = req.remarks || "";
+
+        if (status === "REJECTED" && !remarks) {
+            apz.dispMsg({
+                type: "E",
+                message: "Remarks are mandatory to reject - go back and enter remarks"
+            });
+            return;
+        }
+
+        req.status = status;
+        req.decidedOn = apz.app.CheckerAddApplicantSuccess.now();
+
+        // Snapshot for the success / reject pages.
+        apz.app.checkerDecision = { ...req };
+
+        apz.dispMsg({
+            type: status === "ACCEPTED" ? "S" : "I",
+            message: status === "ACCEPTED" ?
+                "Request accepted" + (remarks ? " - " + remarks : "") :
+                "Request rejected - " + remarks
+        });
+
+        apz.launchScreen({ appId: apz.appId, scr: target });
+    },
+
     Reject: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "CheckerApplicantReject" });
+        apz.app.CheckerAddApplicantSuccess.decide("REJECTED", "CheckerApplicantReject");
     },
 
     Accept: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "CheckerAddapplicantSuccesspage" });
+        apz.app.CheckerAddApplicantSuccess.decide("ACCEPTED", "CheckerAddapplicantSuccesspage");
+    },
+
+    now: () => {
+        let d = new Date();
+        let pad = (n) => String(n).padStart(2, "0");
+
+        return pad(d.getDate()) + "-" + pad(d.getMonth() + 1) +
+            "-" + d.getFullYear() + " " + pad(d.getHours()) +
+            ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the pending request under verification.
+// ==============================
+
+apz.app.onLoad_CheckerAddApplicantSuccess = () => {
+
+    let req = apz.app.CheckerAddApplicantSuccess.current();
+
+    if (!req) {
+        apz.dispMsg({
+            type: "I",
+            message: "No pending registration requests"
+        });
+        return;
     }
 
+    let paint = (id, value) => {
+        let elm = document.getElementById(CAAS_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Request ID / Initiated Date & Time.
+    paint("el_txt_4_txtcnt", req.requestId);
+    paint("el_txt_6_txtcnt", req.initiatedDateTime);
+
+    // Nickname / Applicant Name / PAN.
+    paint("el_txt_9_txtcnt", req.nickname);
+    paint("el_txt_11_txtcnt", req.applicantName);
+    paint("el_txt_13_txtcnt", req.pan);
+
+    // Depository Type / DP ID / Client ID.
+    paint("el_txt_15_txtcnt", req.depositoryType);
+    paint("el_txt_17_txtcnt", req.dpId);
+    paint("el_txt_19_txtcnt", req.clientId);
+
+    // Priority.
+    paint("el_txt_22_txtcnt", req.priority);
 };

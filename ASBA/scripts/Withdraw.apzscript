@@ -1,3 +1,16 @@
+// ==============================
+// WITHDRAW APPLICATION
+// Screen: Withdraw | Layout: NewLayout
+// Reached from a My-Applications row whose Action is "Withdraw".
+// The row record arrives as apz.app.selectedApplication
+// (fields: IPO Details / Application ID / Applied Date /
+// BID Amount / BID Status).
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const WD_P = "ASBA__Withdraw__";
+
 apz.app.Withdraw = {
 
     Back: () => {
@@ -9,16 +22,74 @@ apz.app.Withdraw = {
     },
 
     OpenWithdrawPopup: () => {
-        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
     },
 
     Cancel: () => {
-        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
     },
 
+    // Freezes a request id + timestamp, then moves to
+    // WithdrawSuccess.
     ConfirmWithdraw: () => {
-        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+        let now = new Date();
+        let pad = (n) => String(n).padStart(2, "0");
+
+        apz.app.withdrawData = {
+            requestId:
+                "ASBA-WD-" + now.getFullYear() + pad(now.getMonth() + 1) +
+                pad(now.getDate()) + "-" + pad(now.getHours()) +
+                pad(now.getMinutes()) + pad(now.getSeconds()),
+            initiatedDateTime:
+                pad(now.getDate()) + "-" + pad(now.getMonth() + 1) +
+                "-" + now.getFullYear() + " " + pad(now.getHours()) +
+                ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds())
+        };
+
+        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
         apz.launchScreen({ appId: apz.appId, scr: "WithdrawSuccess" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints the application being withdrawn.
+// NOTE: the applicant block on this design (Nickname label
+// row) has no value cell, and Priority has no source - those
+// keep their design defaults. Applicant cells on
+// WithdrawSuccess are likewise blank until the entry carries
+// applicant context (see report).
+// ==============================
+
+apz.app.onLoad_Withdraw = () => {
+
+    let app = apz.app.selectedApplication || {};
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(WD_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Header request reference.
+    paint("el_txt_30_txtcnt", app["Application ID"]);
+
+    // Single bid slot from the application amount
+    // (no per-bid breakdown on the application record).
+    paint("el_txt_9_txtcnt", app["Application ID"] ? "1" : "");
+    paint("el_txt_10_txtcnt", "");
+    paint("el_txt_11_txtcnt", "");
+    paint("el_txt_12_txtcnt", app["BID Amount"]);
+
+    // Block Amount.
+    paint("el_txt_14_txtcnt", app["BID Amount"]);
+
+    // Confirm-modal summary: IPO / Applied Date / Status,
+    // then Application ID and Blocked Amount.
+    paint("el_txt_23_txtcnt", app["IPO Details"]);
+    paint("el_txt_25_txtcnt", app["Applied Date"]);
+    paint("el_txt_24_txtcnt", app["BID Status"]);
+    paint("el_txt_26_txtcnt", app["Application ID"]);
+    paint("el_txt_27_txtcnt", app["BID Amount"]);
 };

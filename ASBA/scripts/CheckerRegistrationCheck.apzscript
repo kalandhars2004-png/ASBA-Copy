@@ -1,11 +1,188 @@
+// ==============================
+// CHECKER - REGISTRATION REQUESTS
+// Screen: CheckerRegistrationCheck | Layout: NewLayout
+// Static pending queue at script level (no interface on this
+// screen). Checker verifies the request, writes remarks, then
+// Accept (optional remarks) or Reject (remarks mandatory).
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CRC_P = "ASBA__CheckerRegistrationCheck__";
+
+// Static registration-request queue. Shared via apz.app so the
+// applicant detail screen and result pages see the same rows.
+function checkerRegQueueSeed() {
+    return [
+        {
+            requestId: "ASBA-20250812-100001",
+            initiatedDateTime: "12-08-2025 10:00:00",
+            nickname: "KDX",
+            applicantName: "Kalandhar Mohamed",
+            cifId: "CIF1001",
+            corporateId: "CORP01",
+            corporateName: "Kalandhar Traders",
+            pan: "ABCDE1234F",
+            depositoryType: "NSDL",
+            dpId: "IN300001",
+            clientId: "12345678",
+            priority: "High",
+            status: "PENDING",
+            remarks: "",
+            decidedOn: ""
+        },
+        {
+            requestId: "ASBA-20250813-100002",
+            initiatedDateTime: "13-08-2025 11:30:00",
+            nickname: "VINO",
+            applicantName: "Vino Kumar",
+            cifId: "CIF1002",
+            corporateId: "CORP02",
+            corporateName: "Vino Enterprises",
+            pan: "BCDEF2345G",
+            depositoryType: "CDSL",
+            dpId: "",
+            clientId: "87654321",
+            priority: "Medium",
+            status: "PENDING",
+            remarks: "",
+            decidedOn: ""
+        }
+    ];
+}
+
 apz.app.CheckerRegistrationCheck = {
 
+    // Pending queue (seeded once, shared across checker screens).
+    queue: () => {
+        if (!apz.app.checkerRegQueue) {
+            apz.app.checkerRegQueue = checkerRegQueueSeed();
+        }
+
+        return apz.app.checkerRegQueue;
+    },
+
+    // Request currently under verification (first PENDING row).
+    current: () => {
+        let rows = apz.app.CheckerRegistrationCheck.queue();
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].status === "PENDING") {
+                return rows[i];
+            }
+        }
+
+        return null;
+    },
+
+    // Checker remarks typed on this screen.
+    remarks: () => {
+        let elm = document.getElementById(CRC_P + "el_inp_2");
+        return elm ? (elm.value || "").trim() : "";
+    },
+
+    // Records the decision, snapshots it for the result pages,
+    // confirms with a message, then navigates.
+    decide: (status, target) => {
+        let req = apz.app.CheckerRegistrationCheck.current();
+
+        if (!req) {
+            apz.dispMsg({
+                type: "E",
+                message: "No pending request to decide"
+            });
+            return;
+        }
+
+        let remarks = apz.app.CheckerRegistrationCheck.remarks();
+
+        // Remarks are mandatory on Reject (audit trail).
+        if (status === "REJECTED" && !remarks) {
+            apz.dispMsg({
+                type: "E",
+                message: "Remarks are mandatory to reject"
+            });
+            return;
+        }
+
+        req.status = status;
+        req.remarks = remarks;
+        req.decidedOn = apz.app.CheckerRegistrationCheck.now();
+
+        // Snapshot for the success / reject pages.
+        apz.app.checkerDecision = { ...req };
+
+        apz.dispMsg({
+            type: status === "ACCEPTED" ? "S" : "I",
+            message: status === "ACCEPTED" ?
+                "Request accepted" + (remarks ? " - " + remarks : "") :
+                "Request rejected - " + remarks
+        });
+
+        apz.launchScreen({ appId: apz.appId, scr: target });
+    },
+
     Reject: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "CheckerApplicantReject" });
+        apz.app.CheckerRegistrationCheck.decide("REJECTED", "CheckerApplicantReject");
     },
 
     Accept: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "CheckerAddapplicantSuccesspage" });
+        apz.app.CheckerRegistrationCheck.decide("ACCEPTED", "CheckerAddapplicantSuccesspage");
+    },
+
+    now: () => {
+        let d = new Date();
+        let pad = (n) => String(n).padStart(2, "0");
+
+        return pad(d.getDate()) + "-" + pad(d.getMonth() + 1) +
+            "-" + d.getFullYear() + " " + pad(d.getHours()) +
+            ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the pending request under verification.
+// Cell order matches the design labels:
+// Nickname / Applicant Name / CIF ID, then
+// Corporate ID / Corporate Name / PAN, then
+// Depository Type / DP ID / Client ID, then Priority.
+// ==============================
+
+apz.app.onLoad_CheckerRegistrationCheck = () => {
+
+    let req = apz.app.CheckerRegistrationCheck.current();
+
+    if (!req) {
+        apz.dispMsg({
+            type: "I",
+            message: "No pending registration requests"
+        });
+        return;
     }
 
+    let paint = (id, value) => {
+        let elm = document.getElementById(CRC_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Nickname / Applicant Name / CIF ID.
+    paint("el_txt_10_txtcnt", req.nickname);
+    paint("el_txt_11_txtcnt", req.applicantName);
+    paint("el_txt_12_txtcnt", req.cifId);
+
+    // Corporate ID / Corporate Name / PAN.
+    paint("el_txt_16_txtcnt", req.corporateId);
+    paint("el_txt_17_txtcnt", req.corporateName);
+    paint("el_txt_18_txtcnt", req.pan);
+
+    // Depository Type / DP ID / Client ID.
+    paint("el_txt_22_txtcnt", req.depositoryType);
+    paint("el_txt_23_txtcnt", req.dpId);
+    paint("el_txt_24_txtcnt", req.clientId);
+
+    // Priority.
+    paint("el_txt_27_txtcnt", req.priority);
 };

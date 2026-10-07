@@ -67,6 +67,10 @@ apz.app.RegisterApplicant = {
         let priority = (priorityElm && priorityElm.value) ||
             mockCifData.priority;
 
+        // Declaration checkbox (el_bdg_4).
+        let declElm = document.getElementById(RAP_P + "el_bdg_4");
+        let declaration = declElm ? !!declElm.checked : false;
+
         // gr_row_14 block: read whatever is currently displayed
         // (mock today, live data in future) so it always travels
         // to the next screen without code changes.
@@ -84,7 +88,8 @@ apz.app.RegisterApplicant = {
             kycStatus: cif.kycStatus,
             clientId: clientIdElm || cif.clientId,
             dpId: cif.dpId,
-            priority: priority
+            priority: priority,
+            declaration: declaration
         };
 
         console.log("Registration Data :", apz.app.registrationData);

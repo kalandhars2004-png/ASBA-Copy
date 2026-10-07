@@ -1,11 +1,61 @@
+// ==============================
+// CHECKER - APPLICANT ACCEPTED PAGE
+// Screen: CheckerAddapplicantSuccesspage | Layout: NewLayout
+// Paints the decided request snapshot (apz.app.checkerDecision)
+// written by the Accept action.
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CAP_P = "ASBA__CheckerAddapplicantSuccesspage__";
+
 apz.app.CheckerAddapplicantSuccesspage = {
 
+    // Back to the dashboard (flow ends here).
     Dashboard: () => {
         apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
     },
 
+    // Starts a fresh IPO application.
     AddNewIPO: () => {
         apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
     }
+};
 
+
+// ==============================
+// ONLOAD - paints the accepted request snapshot.
+// ==============================
+
+apz.app.onLoad_CheckerAddapplicantSuccesspage = () => {
+
+    let req = apz.app.checkerDecision;
+
+    if (!req) {
+        return;
+    }
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(CAP_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    // Request ID / Initiated Date & Time.
+    paint("el_txt_4_txtcnt", req.requestId);
+    paint("el_txt_6_txtcnt", req.initiatedDateTime);
+
+    // Nickname / Applicant Name / PAN.
+    paint("el_txt_11_txtcnt", req.nickname);
+    paint("el_txt_12_txtcnt", req.applicantName);
+    paint("el_txt_13_txtcnt", req.pan);
+
+    // Depository Type / DP ID / Client ID.
+    paint("el_txt_23_txtcnt", req.depositoryType);
+    paint("el_txt_24_txtcnt", req.dpId);
+    paint("el_txt_25_txtcnt", req.clientId);
+
+    // Priority.
+    paint("el_txt_28_txtcnt", req.priority);
 };
