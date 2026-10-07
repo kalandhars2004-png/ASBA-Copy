@@ -62,7 +62,11 @@ apz.app.EditApplicant = {
 
         console.log("Edit Data :", apz.app.editData);
 
-        apz.launchScreen({ appId: apz.appId, scr: "EditedApplicantReview" });
+        // All review landings go through the common page.
+        // reviewFrom tells it which div to show + paint.
+        apz.app.reviewFrom = "EditedApplicantReview";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonReviewPage" });
     }
 };
 

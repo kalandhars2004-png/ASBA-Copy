@@ -71,7 +71,11 @@ apz.app.AddApplicantAndDemat = {
 
         console.log("Application Data :", apz.app.applicationData);
 
-        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantReviewAndConfirm" });
+        // All review landings go through the common page.
+        // reviewFrom tells it which div to show + paint.
+        apz.app.reviewFrom = "AddApplicantReviewAndConfirm";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonReviewPage" });
     },
 
     // Recent-applicants list response (painted by the framework).

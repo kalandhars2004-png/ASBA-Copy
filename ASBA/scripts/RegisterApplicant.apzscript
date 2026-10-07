@@ -94,7 +94,11 @@ apz.app.RegisterApplicant = {
 
         console.log("Registration Data :", apz.app.registrationData);
 
-        apz.launchScreen({ appId: apz.appId, scr: "RegistrationReviewandConfirm" });
+        // All review landings go through the common page.
+        // reviewFrom tells it which div to show + paint.
+        apz.app.reviewFrom = "RegistrationReviewandConfirm";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonReviewPage" });
     },
 
     // Fired when the Depository radio changes. CDSL applicants

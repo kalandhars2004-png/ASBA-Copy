@@ -1,0 +1,195 @@
+// ==============================
+// COMMON REVIEW PAGE
+// Screen: CommonReviewPage | Layout: NewLayout
+// Single review landing for the 4 maker flows. Each form
+// Continue sets apz.app.reviewFrom to its screen name; onLoad
+// shows only the matching div + footer and paints it.
+// Checker flows keep their own check screens (a separate
+// checker-common page is planned, not this one).
+// Divs: RegistrationReviewDiv / AddApplicantReviewDiv /
+// EditedReviewDiv / ApplyReviewDiv + 4 matching footers.
+// All element IDs below are design IDs - do NOT rename them here.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const CRP_P = "ASBA__CommonReviewPage__";
+
+apz.app.CommonReviewPage = {
+
+    // Back to the source form. Entered data stays in its global
+    // for re-paint on return.
+    edit: () => {
+        let from = apz.app.reviewFrom || "";
+
+        if (from === "RegistrationReviewandConfirm") {
+            apz.launchScreen({ appId: apz.appId, scr: "RegisterApplicant" });
+        } else if (from === "ApplyReview") {
+            apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
+        } else {
+            apz.launchScreen({ appId: apz.appId, scr: "AddApplicantAndDemat" });
+        }
+    },
+
+    // Freezes request data where the flow needs it, tags the
+    // success landing, and moves to CommonSuccessScreen.
+    confirm: () => {
+        let from = apz.app.reviewFrom || "";
+        let now = new Date();
+        let pad = (n) => String(n).padStart(2, "0");
+
+        let stamp = () => {
+            return {
+                requestId:
+                    "ASBA-" + now.getFullYear() + pad(now.getMonth() + 1) +
+                    pad(now.getDate()) + "-" + pad(now.getHours()) +
+                    pad(now.getMinutes()) + pad(now.getSeconds()) + "-" +
+                    Math.floor(1000 + Math.random() * 9000),
+                initiatedDateTime:
+                    pad(now.getDate()) + "-" + pad(now.getMonth() + 1) +
+                    "-" + now.getFullYear() + " " + pad(now.getHours()) +
+                    ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds())
+            };
+        };
+
+        if (from === "AddApplicantReviewAndConfirm") {
+            let data = apz.app.applicationData || {};
+            let frozen = stamp();
+
+            apz.app.applicationData = { ...data, ...frozen };
+            apz.app.successFrom = "AddApplicantReviewAndConfirm";
+        } else if (from === "RegistrationReviewandConfirm") {
+            apz.app.successFrom = "RegistrationReviewandConfirm";
+        } else if (from === "ApplyReview") {
+            let frozen = stamp();
+
+            apz.app.applyData = { ...frozen };
+            apz.app.successFrom = "ApplyReview";
+        }
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
+    },
+
+    // Edited flow: back to the edit form.
+    Cancel: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "EditApplicant" });
+    },
+
+    // Edited flow: on to the common success screen (Edit div).
+    Continue: () => {
+        apz.app.successFrom = "EditedApplicantReview";
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
+    },
+
+    showOnly: (...ids) => {
+        let divs = [
+            "RegistrationReviewDiv", "RegistrationReviewFooterDiv",
+            "AddApplicantReviewDiv", "AddApplicantReviewFooterDiv",
+            "EditedReviewDiv", "EditedReviewFooterDiv",
+            "ApplyReviewDiv", "ApplyReviewFooterDiv"
+        ];
+
+        divs.forEach((name) => {
+            let elm = document.getElementById(CRP_P + name);
+
+            if (!elm) {
+                return;
+            }
+
+            if (ids.indexOf(name) >= 0) {
+                apz.show(CRP_P + name);
+            } else {
+                apz.hide(CRP_P + name);
+            }
+        });
+    }
+};
+
+
+// ==============================
+// ONLOAD - shows + paints the div matching apz.app.reviewFrom.
+// NOTE: AddApplicantReviewDiv has no value cells in the design
+// (labels only) - only its Priority paints until cells exist.
+// ApplyReviewDiv has no nickname cell - nickname is skipped.
+// ==============================
+
+apz.app.onLoad_CommonReviewPage = () => {
+
+    let from = apz.app.reviewFrom || "";
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(CRP_P + id);
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    if (from === "RegistrationReviewandConfirm") {
+        let data = apz.app.registrationData || {};
+
+        apz.app.CommonReviewPage.showOnly("RegistrationReviewDiv", "RegistrationReviewFooterDiv");
+
+        // Nickname / Applicant Name / CIF ID.
+        paint("el_txt_20_txtcnt", data.nickname);
+        paint("el_txt_21_txtcnt", data.applicantName);
+        paint("el_txt_22_txtcnt", data.cifId || data.clientId);
+
+        // Corporate ID / Corporate Name / PAN.
+        paint("el_txt_26_txtcnt", data.corporateId);
+        paint("el_txt_27_txtcnt", data.corporateName);
+        paint("el_txt_28_txtcnt", data.pan);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_32_txtcnt", data.depositoryType);
+        paint("el_txt_33_txtcnt", data.dpId);
+        paint("el_txt_34_txtcnt", data.clientId);
+
+        // Priority.
+        paint("el_txt_37_txtcnt", data.priority);
+    } else if (from === "AddApplicantReviewAndConfirm") {
+        let data = apz.app.applicationData || {};
+
+        apz.app.CommonReviewPage.showOnly("AddApplicantReviewDiv", "AddApplicantReviewFooterDiv");
+
+        // No value cells in this div yet - only Priority paints.
+        paint("el_txt_15_txtcnt", data.priority);
+    } else if (from === "EditedApplicantReview") {
+        let data = apz.app.editData || {};
+
+        apz.app.CommonReviewPage.showOnly("EditedReviewDiv", "EditedReviewFooterDiv");
+
+        // Applicant ID / Nickname / Applicant Name.
+        paint("el_txt_42_txtcnt", data.applicantId);
+        paint("el_txt_43_txtcnt", data.nickname);
+        paint("el_txt_44_txtcnt", data.applicantName);
+
+        // Depository Type / DP ID / Client ID.
+        paint("el_txt_48_txtcnt", data.depositoryType);
+        paint("el_txt_49_txtcnt", data.dpId);
+        paint("el_txt_50_txtcnt", data.clientId);
+
+        // PAN + Priority.
+        paint("el_txt_52_txtcnt", data.pan);
+        paint("el_txt_59_txtcnt", data.priority);
+    } else if (from === "ApplyReview") {
+        let bids = apz.app.bidRows || [];
+        let firstBid = bids.length ? bids[0] : {};
+
+        apz.app.CommonReviewPage.showOnly("ApplyReviewDiv", "ApplyReviewFooterDiv");
+
+        // Bid row (No / Quantity / Price / Amount).
+        paint("el_txt_66_txtcnt", firstBid.no);
+        paint("el_txt_67_txtcnt", firstBid.quantity);
+        paint("el_txt_68_txtcnt", firstBid.price);
+        paint("el_txt_69_txtcnt", firstBid.amount);
+
+        // Block Amount (same rule as ApplyReview; guarded) + Priority.
+        let blockAmount = (apz.app.ApplyReview && apz.app.ApplyReview.blockAmount) ?
+            apz.app.ApplyReview.blockAmount() : "";
+
+        paint("el_txt_71_txtcnt", blockAmount);
+        paint("el_txt_75_txtcnt", apz.app.applyPriority);
+    } else {
+        // Unknown entry: show the registration block as a safe default.
+        apz.app.CommonReviewPage.showOnly("RegistrationReviewDiv", "RegistrationReviewFooterDiv");
+    }
+};

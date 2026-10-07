@@ -43,7 +43,11 @@ apz.app.ApplyPage = {
         let declElm = document.getElementById(APP_P + "el_cbx_1");
         apz.app.applyDeclaration = declElm ? !!declElm.checked : false;
 
-        apz.launchScreen({ appId: apz.appId, scr: "ApplyReview" });
+        // All review landings go through the common page.
+        // reviewFrom tells it which div to show + paint.
+        apz.app.reviewFrom = "ApplyReview";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonReviewPage" });
     },
 
     // Clones the last bid row of ct_lst_35 for one more bid.
