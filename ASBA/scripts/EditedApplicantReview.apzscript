@@ -1,0 +1,11 @@
+apz.app.EditedApplicantReview = {
+
+    Cancel: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "EditApplicant" });
+    },
+
+    Continue: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "EditApplicantSuccess" });
+    }
+
+};

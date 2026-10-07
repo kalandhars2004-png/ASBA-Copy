@@ -1,0 +1,7 @@
+apz.app.CheckerIPOReject = {
+
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    }
+
+};

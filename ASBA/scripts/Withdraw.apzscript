@@ -1,0 +1,24 @@
+apz.app.Withdraw = {
+
+    Back: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    OpenWithdrawPopup: () => {
+        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+    },
+
+    Cancel: () => {
+        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+    },
+
+    ConfirmWithdraw: () => {
+        apz.toggleModal({ targetId: "ASBA__Withdraw__pu_mdl_2" });
+        apz.launchScreen({ appId: apz.appId, scr: "WithdrawSuccess" });
+    }
+
+};

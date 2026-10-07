@@ -1,0 +1,11 @@
+apz.app.EditApplicantSuccess = {
+
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    AddNewApplicant: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantAndDemat" });
+    }
+
+};

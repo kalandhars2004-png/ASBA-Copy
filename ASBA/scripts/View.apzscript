@@ -1,0 +1,11 @@
+apz.app.View = {
+
+    Back: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    }
+
+};

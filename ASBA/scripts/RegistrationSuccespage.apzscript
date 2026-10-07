@@ -1,0 +1,73 @@
+// ==============================
+// REGISTRATION SUCCESS PAGE
+// Screen: RegistrationSuccespage | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const RSP_P = "ASBA__RegistrationSuccespage__";
+
+apz.app.RegistrationSuccespage = {
+
+    // Back to the dashboard (flow ends here).
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    // Starts a fresh applicant registration.
+    AddNewApplicant: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "RegisterApplicant" });
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the success values from the shared
+// apz.app.registrationData collected on the form screen.
+// Cell order matches the design labels:
+// Nickname / Applicant Name / CIF ID, then
+// Corporate ID / Corporate Name / PAN, then
+// Depository Type / DP ID / Client ID, then Priority.
+// ==============================
+
+apz.app.onLoad_RegistrationSuccespage = () => {
+
+    let data = apz.app.registrationData;
+
+    if (!data) {
+        return;
+    }
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(RSP_P + id);
+        if (elm) {
+            elm.textContent = value || "";
+        }
+    };
+
+    // Nickname / Applicant Name / CIF ID
+    paint("el_txt_27_txtcnt", data.nickname);
+    paint("el_txt_28_txtcnt", data.applicantName);
+    paint("el_txt_29_txtcnt", data.cifId || data.clientId);
+
+    // Corporate ID / Corporate Name / PAN
+    paint("el_txt_33_txtcnt", data.corporateId);
+    paint("el_txt_34_txtcnt", data.corporateName);
+    paint("el_txt_35_txtcnt", data.pan);
+
+    // Depository Type / DP ID / Client ID
+    paint("el_txt_39_txtcnt", data.depositoryType);
+    paint("el_txt_40_txtcnt", data.dpId);
+    paint("el_txt_41_txtcnt", data.clientId);
+
+    // Priority
+    paint("el_txt_44_txtcnt", data.priority);
+
+    // CDSL applicants have no DP ID - hide its label + value.
+    if ((data.depositoryType || "") === "CDSL") {
+        apz.hide(RSP_P + "el_txt_113");
+        apz.hide(RSP_P + "el_txt_116");
+    }
+};

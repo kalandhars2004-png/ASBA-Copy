@@ -1,0 +1,162 @@
+// ==============================
+// REGISTER APPLICANT
+// Screen: RegisterApplicant | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const RAP_P = "ASBA__RegisterApplicant__";
+
+// MOCK CIF block (gr_row_14). No interface is attached to this
+// screen, so onLoad paints these values from here. Edit freely.
+const mockCifData = {
+    cifId: "",
+    corporateId: "",
+    corporateName: "",
+    pan: "",
+    kycStatus: "",
+    // Carried into registrationData for the Review screen.
+    clientId: "",
+    dpId: "",
+    priority: "High"
+};
+
+apz.app.RegisterApplicant = {
+
+    // Back to the dashboard without saving.
+    cancel: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    // Collects ct_lst_9 fields + the CIF mock block into the
+    // shared global, then moves to RegistrationReviewandConfirm.
+    confirm: () => {
+        let nickname = apz.getElmValue(RAP_P + "el_inp_1");
+        let applicantName = apz.getElmValue(RAP_P + "el_inp_2");
+
+        // Client ID input (converted from label in the designer).
+        // Falls back to the mock value when left blank.
+        let clientIdElm = apz.getElmValue(RAP_P + "el_txt_41");
+
+        // Depository Type (NSDL / CDSL radio).
+        let selectedRadio = document.querySelector(
+            'input[name="' + RAP_P + 'el_rdo_1_"]:checked'
+        );
+
+        let depositoryType = "";
+
+        if (selectedRadio) {
+            depositoryType = selectedRadio.getAttribute("aria-label") || "";
+        }
+
+        if (!nickname || !applicantName) {
+            apz.dispMsg({
+                type: "E",
+                message: "Nickname and Applicant Name are mandatory"
+            });
+            return;
+        }
+
+        // Priority dropdown (el_txt_45): read the visible input
+        // value directly - apz.getElmValue returns "" unless an
+        // option was explicitly picked (platform only reads
+        // li.is-selected).
+        let priorityElm = document.getElementById(RAP_P + "el_txt_45");
+        let priority = (priorityElm && priorityElm.value) ||
+            mockCifData.priority;
+
+        // gr_row_14 block: read whatever is currently displayed
+        // (mock today, live data in future) so it always travels
+        // to the next screen without code changes.
+        let cif = apz.app.RegisterApplicant.readCifBlock();
+
+        // Shared with Review (paint) and Success screens.
+        apz.app.registrationData = {
+            nickname: nickname,
+            applicantName: applicantName,
+            depositoryType: depositoryType,
+            cifId: cif.cifId,
+            corporateId: cif.corporateId,
+            corporateName: cif.corporateName,
+            pan: cif.pan,
+            kycStatus: cif.kycStatus,
+            clientId: clientIdElm || cif.clientId,
+            dpId: cif.dpId,
+            priority: priority
+        };
+
+        console.log("Registration Data :", apz.app.registrationData);
+
+        apz.launchScreen({ appId: apz.appId, scr: "RegistrationReviewandConfirm" });
+    },
+
+    // Fired when the Depository radio changes. CDSL applicants
+    // have no DP ID, so its row is hidden; NSDL shows it back.
+    depositoryChanged: () => {
+        let selectedRadio = document.querySelector(
+            'input[name="' + RAP_P + 'el_rdo_1_"]:checked'
+        );
+
+        let depo = selectedRadio ?
+            (selectedRadio.getAttribute("aria-label") || "") : "";
+
+        if (depo === "CDSL") {
+            apz.hide(RAP_P + "sc_col_71_li");
+        } else {
+            apz.show(RAP_P + "sc_col_71_li");
+        }
+    },
+
+    // Paints the gr_row_14 mock block (CIF / Corporate / PAN / KYC).
+    paintCifBlock: () => {
+        let paint = (id, value) => {
+            let elm = document.getElementById(RAP_P + id);
+            if (elm) {
+                elm.textContent = value || "";
+            }
+        };
+
+        paint("el_txt_35_txtcnt", mockCifData.cifId);
+        paint("el_txt_36_txtcnt", mockCifData.corporateId);
+        paint("el_txt_37_txtcnt", mockCifData.corporateName);
+        paint("el_txt_47_txtcnt", mockCifData.pan);
+        paint("el_txt_48_txtcnt", mockCifData.kycStatus);
+    },
+
+    // Reads the gr_row_14 value cells as currently displayed.
+    // Falls back to mockCifData per field when a cell is empty,
+    // so future live data passes through with no code change.
+    readCifBlock: () => {
+        let read = (id, fallback) => {
+            let elm = document.getElementById(RAP_P + id);
+            let shown = elm ? elm.textContent.trim() : "";
+            return shown || fallback || "";
+        };
+
+        return {
+            cifId: read("el_txt_35_txtcnt", mockCifData.cifId),
+            corporateId: read("el_txt_36_txtcnt", mockCifData.corporateId),
+            corporateName: read("el_txt_37_txtcnt", mockCifData.corporateName),
+            pan: read("el_txt_47_txtcnt", mockCifData.pan),
+            kycStatus: read("el_txt_48_txtcnt", mockCifData.kycStatus),
+            clientId: mockCifData.clientId,
+            dpId: mockCifData.dpId,
+            priority: mockCifData.priority
+        };
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the gr_row_14 mock block.
+// No interface on this screen, so values come from
+// mockCifData above (edit the values there).
+// ==============================
+
+apz.app.onLoad_RegisterApplicant = () => {
+    apz.app.RegisterApplicant.paintCifBlock();
+    // Applies the DP ID visibility for any pre-selected value.
+    apz.app.RegisterApplicant.depositoryChanged();
+};

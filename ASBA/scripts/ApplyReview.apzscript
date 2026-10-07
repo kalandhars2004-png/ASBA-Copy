@@ -1,0 +1,11 @@
+apz.app.ApplyReview = {
+
+    edit: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "Apply" });
+    },
+
+    confirm: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "ApplySuccess" });
+    }
+
+};

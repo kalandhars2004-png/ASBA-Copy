@@ -1,0 +1,5 @@
+// No interactive elements on this screen (reject confirmation page).
+// Exits via device back navigation (backButtonBehavior).
+
+apz.app.CheckerApplicantReject = {
+};

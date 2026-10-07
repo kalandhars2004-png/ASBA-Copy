@@ -1,0 +1,11 @@
+apz.app.CheckerIPOsuccespage = {
+
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    AddNewIPO: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
+    }
+
+};

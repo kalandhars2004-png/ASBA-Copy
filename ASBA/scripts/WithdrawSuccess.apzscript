@@ -1,0 +1,7 @@
+apz.app.WithdrawSuccess = {
+
+    Dashboard: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    }
+
+};

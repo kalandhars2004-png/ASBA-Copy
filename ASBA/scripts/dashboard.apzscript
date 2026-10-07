@@ -1,0 +1,363 @@
+// ==============================
+// DASHBOARD
+// Screen: dashboard | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const DP = "ASBA__dashboard__";
+// Register (marketing) block vs dashboard (stats) block.
+const REG_DIV = DP + "gr_row_52";
+const DASH_DIV = DP + "gr_row_28";
+// Tab headers inside pl_tab_2 (New IPOs tab stays visible always).
+const TAB_MYAPPS = DP + "ps_pls_61_li";
+const TAB_MANAGE = DP + "ps_pls_66_li";
+// Action column header inside the New-IPOs table.
+const ACT_HDR = DP + "el_label_8";
+// Id of the <style> node injected for guest (unregistered) view.
+const GUEST_CSS_ID = "asba-guest-hide-css";
+// Row-actions popover (View / Edit Applicant / Delete Applicant menu).
+// Content row gr_row_41 lives inside this popover.
+const APP_POP = DP + "pu_ppr_1";
+
+apz.app.dashboard = {
+
+    // NOTE: the registered flag lives on apz.app (global), NOT here:
+    // this file reloads on every dashboard visit, so per-file
+    // state would reset to false each time. Default is falsy
+    // (unregistered) until Register / applicant-added sets it.
+    // TEST: flip apz.app.isRegistered in console to preview.
+
+    // Switches the home page between register view and dashboard
+    // view. Called once from onLoad_dashboard. Script-only change:
+    // uses apz.show/apz.hide and a style rule, design IDs untouched.
+    toggleHomeView: () => {
+        if (apz.app.isRegistered === true) {
+            apz.show(DASH_DIV);
+            apz.hide(REG_DIV);
+            apz.show(TAB_MYAPPS);
+            apz.show(TAB_MANAGE);
+            apz.app.dashboard.setGuestCss(false);
+        } else {
+            apz.show(REG_DIV);
+            apz.hide(DASH_DIV);
+            apz.hide(TAB_MYAPPS);
+            apz.hide(TAB_MANAGE);
+            apz.app.dashboard.setGuestCss(true);
+        }
+    },
+
+    // Hides the Action column (header + all present and future
+    // Apply buttons) via a style rule, so rows painted later by
+    // the server response stay hidden too. The column shells
+    // (sc_col_83 header cell, sc_col_91 data cells) are hidden as
+    // well so no empty bordered boxes remain. Removing the rule
+    // restores the original column widths untouched.
+    setGuestCss: (hide) => {
+        let styleElm = document.getElementById(GUEST_CSS_ID);
+
+        if (!hide) {
+            if (styleElm) {
+                styleElm.remove();
+            }
+            return;
+        }
+
+        if (!styleElm) {
+            styleElm = document.createElement("style");
+            styleElm.id = GUEST_CSS_ID;
+            styleElm.textContent =
+                "#" + ACT_HDR + ", " +
+                '[id^="' + DP + 'getAllIPOS__o__data__Action"], ' +
+                '[id^="' + DP + 'sc_col_83"], ' +
+                '[id^="' + DP + 'sc_col_91"]' +
+                " { display: none !important; }";
+            document.head.appendChild(styleElm);
+        }
+    },
+
+    addApplicant: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantAndDemat" });
+    },
+
+    RegisterForIpo: () => {
+        // User tapped Register: treat as registered from here on,
+        // so the dashboard shows the dashboard view on return.
+        // Stored on apz.app so it survives this file reloading.
+        apz.app.isRegistered = true;
+        apz.launchScreen({ appId: apz.appId, scr: "RegisterApplicant" });
+    },
+
+    View: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "View" });
+    },
+
+    EditApplicant: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "EditApplicant" });
+    },
+
+    withdraw: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "Withdraw" });
+    },
+
+    Apply: (element) => {
+        let row = Number(element.getAttribute("rowno"));
+
+        console.log("Clicked Row :", row);
+
+        let ipoList = apz.app.ipoList;
+
+        if (!ipoList || !Array.isArray(ipoList)) {
+            apz.dispMsg({
+                type: "E",
+                message: "IPO list not available"
+            });
+            return;
+        }
+
+        // Appzillon rowno is 0-based
+        let selectedIPO = ipoList[row];
+
+        if (!selectedIPO) {
+            console.log("IPO List :", ipoList);
+            console.log("Row :", row);
+
+            apz.dispMsg({
+                type: "E",
+                message: "Selected IPO not found"
+            });
+            return;
+        }
+
+        // Store selected IPO globally
+        apz.app.selectedIPO = selectedIPO;
+
+        console.log("Selected IPO :", apz.app.selectedIPO);
+
+        apz.launchScreen({ appId: apz.appId, scr: "ApplyPage" });
+    },
+
+    // Opens the Delete-Applicant confirm modal (pu_mdl_1).
+    // Opens the row-actions popover (pu_ppr_1: View / Edit /
+    // Delete menu, content row gr_row_41) next to the Action
+    // (3-dot) icon tapped in the Manage-Applicants table.
+    // Receives the icon element via showApplicantPopup(this).
+    showApplicantPopup: (element) => {
+        let pop = document.getElementById(APP_POP);
+
+        if (!pop || !element || !element.getBoundingClientRect) {
+            return;
+        }
+
+        // Toggle: tapping the icon again closes the popover.
+        if (!pop.classList.contains("sno")) {
+            apz.app.dashboard.hideApplicantPopup();
+            return;
+        }
+
+        // Remember which row opened it (used by Delete flow later).
+        let row = element.getAttribute("rowno");
+
+        if (row === null && element.closest) {
+            let li = element.closest("li");
+            row = li ? li.getAttribute("rowno") : null;
+        }
+
+        apz.app.dashboard.popupRow = row === null ? -1 : Number(row);
+
+        // Position the popover just below the icon, kept on screen.
+        let rect = element.getBoundingClientRect();
+        let top = rect.bottom + 6;
+        let left = rect.left;
+
+        if (rect.right > window.innerWidth - 360) {
+            left = Math.max(8, rect.right - 360);
+        }
+
+        pop.style.position = "fixed";
+        pop.style.top = top + "px";
+        pop.style.left = left + "px";
+        pop.style.zIndex = "1050";
+        pop.setAttribute("aria-hidden", "false");
+        pop.classList.remove("sno");
+        apz.app.dashboard.popupOpenedAt = Date.now();
+
+        // First tap only: close the popover on any outside tap.
+        if (!apz.app.dashboard.popupOutsideBound) {
+            document.addEventListener("click", (e) => {
+                // Ignore the tap that opened it (event bubbling).
+                if (Date.now() - apz.app.dashboard.popupOpenedAt < 300) {
+                    return;
+                }
+
+                let openPop = document.getElementById(APP_POP);
+
+                if (openPop && !openPop.classList.contains("sno") &&
+                    !openPop.contains(e.target)) {
+                    apz.app.dashboard.hideApplicantPopup();
+                }
+            });
+            apz.app.dashboard.popupOutsideBound = true;
+        }
+    },
+
+    // Hides the row-actions popover.
+    hideApplicantPopup: () => {
+        let pop = document.getElementById(APP_POP);
+
+        if (pop) {
+            pop.classList.add("sno");
+            pop.setAttribute("aria-hidden", "true");
+        }
+    },
+
+    // Opens the Delete-Applicant confirm modal (pu_mdl_1).
+    DeleteApplicantpopup: () => {
+        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+    },
+
+    // Closes the Delete-Applicant confirm modal without deleting.
+    Cancel: () => {
+        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+    },
+
+    // Confirms delete: closes the modal, calls ManageApplication,
+    // then shows the result and reloads the dashboard.
+    Delete: () => {
+        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+
+        apz.server.callServer({
+            appId: apz.appId,
+            ifaceName: "ManageApplication",
+            buildReq: "N",
+            paintResp: "N",
+            req: apz.app.selectedApplicant || {},
+            callBack: apz.app.dashboard.deleteApplicantCB
+        });
+    },
+
+    deleteApplicantCB: (resp) => {
+        if (resp.errors) {
+            apz.dispMsg({
+                type: "E",
+                message: resp.errors[0].errorMessage
+            });
+            return;
+        }
+
+        apz.dispMsg({
+            type: "S",
+            message: "Applicant deleted successfully"
+        });
+
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    getAllIPOSCB: (resp) => {
+        if (resp.errors) {
+            apz.dispMsg({
+                type: "E",
+                message: resp.errors[0].errorMessage
+            });
+            return;
+        }
+
+        let data = resp.res["ASBA__getAllIPOS_Res"];
+
+        if (!data || !data.data) {
+            apz.dispMsg({
+                type: "E",
+                message: "IPO data not found"
+            });
+            return;
+        }
+
+        // Store IPO list globally
+        apz.app.ipoList = data.data;
+
+        console.log("IPO List Stored :", apz.app.ipoList);
+    },
+
+    getAllApplicationCB: (resp) => {
+        if (resp.errors) {
+            apz.dispMsg({
+                type: "E",
+                message: resp.errors[0].errorMessage
+            });
+            return;
+        }
+    },
+
+    manageApplicationCB: (resp) => {
+        if (resp.errors) {
+            apz.dispMsg({
+                type: "E",
+                message: resp.errors[0].errorMessage
+            });
+            return;
+        }
+    },
+
+    dashboardCB: (resp) => {
+        if (resp.errors) {
+            apz.dispMsg({
+                type: "E",
+                message: resp.errors[0].errorMessage
+            });
+            return;
+        }
+    }
+};
+
+
+// ==============================
+// DASHBOARD ONLOAD
+// Runs on every dashboard load: first applies the
+// register/dashboard view switch, then fetches the
+// 4 dashboard data interfaces for painting.
+// ==============================
+
+apz.app.onLoad_dashboard = () => {
+
+    console.log("Dashboard Loaded");
+
+    apz.app.dashboard.toggleHomeView();
+
+    apz.server.callServer({
+        appId: apz.appId,
+        ifaceName: "getAllIPOS",
+        buildReq: "N",
+        paintResp: "Y",
+        req: {},
+        callBack: apz.app.dashboard.getAllIPOSCB
+    });
+
+    apz.server.callServer({
+        appId: apz.appId,
+        ifaceName: "getAllApplication",
+        buildReq: "N",
+        paintResp: "Y",
+        req: {},
+        callBack: apz.app.dashboard.getAllApplicationCB
+    });
+
+    apz.server.callServer({
+        appId: apz.appId,
+        ifaceName: "ManageApplication",
+        buildReq: "N",
+        paintResp: "Y",
+        req: {},
+        callBack: apz.app.dashboard.manageApplicationCB
+    });
+
+    apz.server.callServer({
+        appId: apz.appId,
+        ifaceName: "dashboard",
+        buildReq: "N",
+        paintResp: "Y",
+        req: {},
+        callBack: apz.app.dashboard.dashboardCB
+    });
+};

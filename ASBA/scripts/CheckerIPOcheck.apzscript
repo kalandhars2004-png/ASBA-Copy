@@ -1,0 +1,11 @@
+apz.app.CheckerIPOcheck = {
+
+    Reject: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "CheckerIPOReject" });
+    },
+
+    Accept: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "CheckerIPOsuccespage" });
+    }
+
+};

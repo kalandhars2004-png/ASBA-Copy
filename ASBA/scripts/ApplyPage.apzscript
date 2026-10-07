@@ -1,0 +1,11 @@
+apz.app.ApplyPage = {
+
+    cancel: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "dashboard" });
+    },
+
+    Continuee: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "ApplyReview" });
+    }
+
+};

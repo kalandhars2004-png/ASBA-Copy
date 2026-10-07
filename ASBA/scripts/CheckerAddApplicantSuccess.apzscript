@@ -1,0 +1,11 @@
+apz.app.CheckerAddApplicantSuccess = {
+
+    Reject: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "CheckerApplicantReject" });
+    },
+
+    Accept: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "CheckerAddapplicantSuccesspage" });
+    }
+
+};

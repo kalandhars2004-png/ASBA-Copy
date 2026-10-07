@@ -1,0 +1,109 @@
+// ==============================
+// ADD APPLICANT REVIEW + CONFIRM
+// Screen: AddApplicantReviewAndConfirm | Layout: NewLayout
+// All element IDs below are design IDs - do NOT rename them here.
+// To change an ID, change it in the designer (D0.apzlayoutdesign)
+// and rebuild; script-only changes must reuse the same IDs.
+// ==============================
+
+// DOM id prefix for every element on this screen.
+const RAC_P = "ASBA__AddApplicantReviewAndConfirm__";
+
+apz.app.AddApplicantReviewAndConfirm = {
+
+    // Back to the form. Entered data stays in
+    // apz.app.applicationData for re-paint on return.
+    edit: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantAndDemat" });
+    },
+
+    // Freezes a request id + timestamp onto the shared data
+    // and moves to the Success screen.
+    confirm: () => {
+        let data = apz.app.applicationData;
+
+        if (!data) {
+            apz.dispMsg({
+                type: "E",
+                message: "Application data not found"
+            });
+            return;
+        }
+
+        // Generate Request ID
+        let now = new Date();
+
+        let requestId =
+            "ASBA-" +
+            now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            String(now.getDate()).padStart(2, "0") +
+            "-" +
+            String(now.getHours()).padStart(2, "0") +
+            String(now.getMinutes()).padStart(2, "0") +
+            String(now.getSeconds()).padStart(2, "0") +
+            "-" +
+            Math.floor(1000 + Math.random() * 9000);
+
+        // Generate Initiated Date & Time
+        let initiatedDateTime =
+            String(now.getDate()).padStart(2, "0") +
+            "-" +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            now.getFullYear() +
+            " " +
+            String(now.getHours()).padStart(2, "0") +
+            ":" +
+            String(now.getMinutes()).padStart(2, "0") +
+            ":" +
+            String(now.getSeconds()).padStart(2, "0");
+
+        // Store Success page data globally
+        apz.app.applicationData = {
+            ...data,
+            requestId: requestId,
+            initiatedDateTime: initiatedDateTime
+        };
+
+        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantSuccess" });
+    }
+};
+
+
+// ==============================
+// ONLOAD - paints the review values from the shared
+// apz.app.applicationData collected on the form screen.
+// Cell order matches the design labels:
+// Nickname / Applicant Name / PAN, then
+// Depository Type / DP ID / Client ID, then Priority.
+// ==============================
+
+apz.app.onLoad_AddApplicantReviewAndConfirm = () => {
+
+    let data = apz.app.applicationData;
+
+    if (!data) {
+        return;
+    }
+
+    let paint = (id, value) => {
+        let elm = document.getElementById(RAC_P + id);
+        if (elm) {
+            elm.textContent = value || "";
+        }
+    };
+
+    // Nickname / Applicant Name / PAN
+    paint("sc_col_58_li", data.nickname);
+    paint("sc_col_59_li", data.applicantName);
+    paint("sc_col_60_li", data.pan);
+
+    // Depository Type / DP ID / Client ID
+    paint("sc_col_63_li", data.depositoryType);
+    paint("sc_col_64_li", data.dpId);
+    paint("sc_col_65_li", data.clientId);
+
+    // Priority
+    paint("el_txt_22_txtcnt", data.priority);
+};
