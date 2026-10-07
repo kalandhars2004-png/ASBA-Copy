@@ -47,7 +47,12 @@ apz.app.Withdraw = {
         };
 
         apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
-        apz.launchScreen({ appId: apz.appId, scr: "WithdrawSuccess" });
+
+        // All success landings go through the common screen.
+        // successFrom tells it which div to show + paint.
+        apz.app.successFrom = "Withdraw";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
     }
 };
 

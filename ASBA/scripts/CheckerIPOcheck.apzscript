@@ -145,7 +145,8 @@ apz.app.CheckerIPOcheck = {
     },
 
     Accept: () => {
-        apz.app.CheckerIPOcheck.decide("ACCEPTED", "CheckerIPOsuccespage");
+        apz.app.successFrom = "CheckerIPOcheck";
+        apz.app.CheckerIPOcheck.decide("ACCEPTED", "CommonSuccessScreen");
     },
 
     now: () => {

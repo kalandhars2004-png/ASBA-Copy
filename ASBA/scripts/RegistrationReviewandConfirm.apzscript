@@ -18,7 +18,11 @@ apz.app.RegistrationReviewandConfirm = {
     },
 
     confirm: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "RegistrationSuccespage" });
+        // All success landings go through the common screen.
+        // successFrom tells it which div to show + paint.
+        apz.app.successFrom = "RegistrationReviewandConfirm";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
     }
 };
 

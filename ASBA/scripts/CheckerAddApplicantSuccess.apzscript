@@ -117,7 +117,8 @@ apz.app.CheckerAddApplicantSuccess = {
     },
 
     Accept: () => {
-        apz.app.CheckerAddApplicantSuccess.decide("ACCEPTED", "CheckerAddapplicantSuccesspage");
+        apz.app.successFrom = "CheckerAddApplicantSuccess";
+        apz.app.CheckerAddApplicantSuccess.decide("ACCEPTED", "CommonSuccessScreen");
     },
 
     now: () => {

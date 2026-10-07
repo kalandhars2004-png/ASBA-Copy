@@ -127,7 +127,8 @@ apz.app.CheckerRegistrationCheck = {
     },
 
     Accept: () => {
-        apz.app.CheckerRegistrationCheck.decide("ACCEPTED", "CheckerAddapplicantSuccesspage");
+        apz.app.successFrom = "CheckerRegistrationCheck";
+        apz.app.CheckerRegistrationCheck.decide("ACCEPTED", "CommonSuccessScreen");
     },
 
     now: () => {

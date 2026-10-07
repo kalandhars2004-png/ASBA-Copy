@@ -52,7 +52,11 @@ apz.app.ApplyReview = {
             initiatedDateTime: initiatedDateTime
         };
 
-        apz.launchScreen({ appId: apz.appId, scr: "ApplySuccess" });
+        // All success landings go through the common screen.
+        // successFrom tells it which div to show + paint.
+        apz.app.successFrom = "ApplyReview";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
     },
 
     // Block Amount = sum of parseable bid amounts; falls back to

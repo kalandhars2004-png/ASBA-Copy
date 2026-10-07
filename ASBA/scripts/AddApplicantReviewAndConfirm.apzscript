@@ -66,7 +66,11 @@ apz.app.AddApplicantReviewAndConfirm = {
             initiatedDateTime: initiatedDateTime
         };
 
-        apz.launchScreen({ appId: apz.appId, scr: "AddApplicantSuccess" });
+        // All success landings go through the common screen.
+        // successFrom tells it which div to show + paint.
+        apz.app.successFrom = "AddApplicantReviewAndConfirm";
+
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
     }
 };
 

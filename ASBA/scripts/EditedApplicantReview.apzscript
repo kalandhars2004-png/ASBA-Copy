@@ -17,9 +17,10 @@ apz.app.EditedApplicantReview = {
         apz.launchScreen({ appId: apz.appId, scr: "EditApplicant" });
     },
 
-    // Moves to the edit success screen.
+    // Moves to the common success screen (Edit div).
     Continue: () => {
-        apz.launchScreen({ appId: apz.appId, scr: "EditApplicantSuccess" });
+        apz.app.successFrom = "EditedApplicantReview";
+        apz.launchScreen({ appId: apz.appId, scr: "CommonSuccessScreen" });
     }
 };
 
