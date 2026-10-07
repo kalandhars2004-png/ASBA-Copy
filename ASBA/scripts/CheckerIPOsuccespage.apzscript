@@ -29,11 +29,28 @@ apz.app.CheckerIPOsuccespage = {
 
 apz.app.onLoad_CheckerIPOsuccespage = () => {
 
-    let req = apz.app.checkerDecision;
-
-    if (!req) {
-        return;
-    }
+    // Static sample so the page shows data even when opened
+    // directly (no Accept/Reject ran yet in this session).
+    let req = apz.app.checkerDecision || {
+        requestId: "ASBA-20250812-200001",
+        initiatedDateTime: "12-08-2025 10:00:00",
+        applicationId: "APP1001",
+        approvedDateTime: "12-08-2025 12:00:00",
+        nickname: "KDX",
+        applicantName: "Kalandhar Mohamed",
+        pan: "ABCDE1234F",
+        depositoryType: "NSDL",
+        dpId: "IN300001",
+        clientId: "12345678",
+        investorType: "Individual",
+        debitAccount: "1870 2100 123456",
+        ipoName: "Varun Beverages Limited",
+        bids: [
+            { no: "1", quantity: "70", price: "195", amount: "13650" }
+        ],
+        blockAmount: "13650",
+        priority: "High"
+    };
 
     let paint = (id, value) => {
         let elm = document.getElementById(CIS_P + id);

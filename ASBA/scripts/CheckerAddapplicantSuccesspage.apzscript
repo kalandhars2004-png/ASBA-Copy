@@ -29,11 +29,19 @@ apz.app.CheckerAddapplicantSuccesspage = {
 
 apz.app.onLoad_CheckerAddapplicantSuccesspage = () => {
 
-    let req = apz.app.checkerDecision;
-
-    if (!req) {
-        return;
-    }
+    // Static sample so the page shows data even when opened
+    // directly (no Accept/Reject ran yet in this session).
+    let req = apz.app.checkerDecision || {
+        requestId: "ASBA-20250812-100001",
+        initiatedDateTime: "12-08-2025 10:00:00",
+        nickname: "KDX",
+        applicantName: "Kalandhar Mohamed",
+        pan: "ABCDE1234F",
+        depositoryType: "NSDL",
+        dpId: "IN300001",
+        clientId: "12345678",
+        priority: "High"
+    };
 
     let paint = (id, value) => {
         let elm = document.getElementById(CAP_P + id);

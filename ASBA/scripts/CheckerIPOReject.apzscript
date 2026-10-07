@@ -25,11 +25,29 @@ apz.app.CheckerIPOReject = {
 
 apz.app.onLoad_CheckerIPOReject = () => {
 
-    let req = apz.app.checkerDecision;
-
-    if (!req) {
-        return;
-    }
+    // Static sample so the page shows data even when opened
+    // directly (no Accept/Reject ran yet in this session).
+    let req = apz.app.checkerDecision || {
+        requestId: "ASBA-20250813-200002",
+        initiatedDateTime: "13-08-2025 11:30:00",
+        applicationId: "APP1002",
+        decidedOn: "13-08-2025 12:15:00",
+        nickname: "VINO",
+        applicantName: "Vino Kumar",
+        pan: "BCDEF2345G",
+        depositoryType: "CDSL",
+        dpId: "",
+        clientId: "87654321",
+        investorType: "Individual",
+        debitAccount: "1870 2100 654321",
+        ipoName: "Ather Energy Private Ltd",
+        bids: [
+            { no: "1", quantity: "100", price: "350", amount: "35000" }
+        ],
+        blockAmount: "35000",
+        priority: "Medium",
+        remarks: "Insufficient balance"
+    };
 
     let paint = (id, value) => {
         let elm = document.getElementById(CIR_P + id);

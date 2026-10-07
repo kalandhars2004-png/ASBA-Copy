@@ -19,11 +19,21 @@ apz.app.CheckerApplicantReject = {
 
 apz.app.onLoad_CheckerApplicantReject = () => {
 
-    let req = apz.app.checkerDecision;
-
-    if (!req) {
-        return;
-    }
+    // Static sample so the page shows data even when opened
+    // directly (no Accept/Reject ran yet in this session).
+    let req = apz.app.checkerDecision || {
+        requestId: "ASBA-20250813-100002",
+        initiatedDateTime: "13-08-2025 11:30:00",
+        decidedOn: "13-08-2025 12:00:00",
+        nickname: "VINO",
+        applicantName: "Vino Kumar",
+        pan: "BCDEF2345G",
+        depositoryType: "CDSL",
+        dpId: "",
+        clientId: "87654321",
+        priority: "Medium",
+        remarks: "PAN mismatch"
+    };
 
     let paint = (id, value) => {
         let elm = document.getElementById(CAR_P + id);
