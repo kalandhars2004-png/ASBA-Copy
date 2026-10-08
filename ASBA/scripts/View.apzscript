@@ -6,8 +6,13 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const VIEW_P = "ASBA__View__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_VIEW = Constants.ID_VIEW || "ASBA__View__";
 
 apz.app.View = {
 
@@ -36,7 +41,7 @@ apz.app.onLoad_View = () => {
     let applicant = apz.app.applicationData || {};
 
     let text = (id, value) => {
-        let elm = document.getElementById(VIEW_P + id);
+        let elm = document.getElementById(Constants.ID_VIEW + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

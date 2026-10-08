@@ -6,23 +6,22 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const DP = "ASBA__dashboard__";
+// Element IDs come from window.Constants (see Constants.apzscript).
 // Register (marketing) block vs dashboard (stats) block.
 
-const REG_DIV = DP + "gr_row_52";
 
-const DASH_DIV = DP + "gr_row_28";
 // Tab headers inside pl_tab_2 (New IPOs tab stays visible always).
-const TAB_MYAPPS = DP + "ps_pls_61_li";
-const TAB_MANAGE = DP + "ps_pls_66_li";
 // Action column header inside the New-IPOs table.
-const ACT_HDR = DP + "el_label_8";
 // Id of the <style> node injected for guest (unregistered) view.
 const GUEST_CSS_ID = "asba-guest-hide-css";
 // Row-actions popover (View / Edit Applicant / Delete Applicant menu).
 // Content row gr_row_41 lives inside this popover.
-const APP_POP = DP + "pu_ppr_1";
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_DASHBOARD = Constants.ID_DASHBOARD || "ASBA__dashboard__";
 
 apz.app.dashboard = {
 
@@ -37,16 +36,16 @@ apz.app.dashboard = {
     // uses apz.show/apz.hide and a style rule, design IDs untouched.
     toggleHomeView: () => {
         if (apz.app.isRegistered === true) {
-            apz.show(DASH_DIV);
-            apz.hide(REG_DIV);
-            apz.show(TAB_MYAPPS);
-            apz.show(TAB_MANAGE);
+            apz.show((Constants.ID_DASHBOARD + "gr_row_28"));
+            apz.hide((Constants.ID_DASHBOARD + "gr_row_52"));
+            apz.show((Constants.ID_DASHBOARD + "ps_pls_61_li"));
+            apz.show((Constants.ID_DASHBOARD + "ps_pls_66_li"));
             apz.app.dashboard.setGuestCss(false);
         } else {
-            apz.show(REG_DIV);
-            apz.hide(DASH_DIV);
-            apz.hide(TAB_MYAPPS);
-            apz.hide(TAB_MANAGE);
+            apz.show((Constants.ID_DASHBOARD + "gr_row_52"));
+            apz.hide((Constants.ID_DASHBOARD + "gr_row_28"));
+            apz.hide((Constants.ID_DASHBOARD + "ps_pls_61_li"));
+            apz.hide((Constants.ID_DASHBOARD + "ps_pls_66_li"));
             apz.app.dashboard.setGuestCss(true);
         }
     },
@@ -71,10 +70,10 @@ apz.app.dashboard = {
             styleElm = document.createElement("style");
             styleElm.id = GUEST_CSS_ID;
             styleElm.textContent =
-                "#" + ACT_HDR + ", " +
-                '[id^="' + DP + 'getAllIPOS__o__data__Action"], ' +
-                '[id^="' + DP + 'sc_col_83"], ' +
-                '[id^="' + DP + 'sc_col_91"]' +
+                "#" + (Constants.ID_DASHBOARD + "el_label_8") + ", " +
+                '[id^="' + Constants.ID_DASHBOARD + 'getAllIPOS__o__data__Action"], ' +
+                '[id^="' + Constants.ID_DASHBOARD + 'sc_col_83"], ' +
+                '[id^="' + Constants.ID_DASHBOARD + 'sc_col_91"]' +
                 " { display: none !important; }";
             document.head.appendChild(styleElm);
         }
@@ -221,7 +220,7 @@ apz.app.dashboard = {
     // (3-dot) icon tapped in the Manage-Applicants table.
     // Receives the icon element via showApplicantPopup(this).
     showApplicantPopup: (element) => {
-        let pop = document.getElementById(APP_POP);
+        let pop = document.getElementById((Constants.ID_DASHBOARD + "pu_ppr_1"));
 
         if (!pop || !element || !element.getBoundingClientRect) {
             return;
@@ -268,7 +267,7 @@ apz.app.dashboard = {
                     return;
                 }
 
-                let openPop = document.getElementById(APP_POP);
+                let openPop = document.getElementById((Constants.ID_DASHBOARD + "pu_ppr_1"));
 
                 if (openPop && !openPop.classList.contains("sno") &&
                     !openPop.contains(e.target)) {
@@ -281,7 +280,7 @@ apz.app.dashboard = {
 
     // Hides the row-actions popover.
     hideApplicantPopup: () => {
-        let pop = document.getElementById(APP_POP);
+        let pop = document.getElementById((Constants.ID_DASHBOARD + "pu_ppr_1"));
 
         if (pop) {
             pop.classList.add("sno");
@@ -291,18 +290,18 @@ apz.app.dashboard = {
 
     // Opens the Delete-Applicant confirm modal (pu_mdl_1).
     DeleteApplicantpopup: () => {
-        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+        apz.toggleModal({ targetId: Constants.ID_DASHBOARD + "pu_mdl_1" });
     },
 
     // Closes the Delete-Applicant confirm modal without deleting.
     Cancel: () => {
-        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+        apz.toggleModal({ targetId: Constants.ID_DASHBOARD + "pu_mdl_1" });
     },
 
     // Confirms delete: closes the modal, calls ManageApplication,
     // then shows the result and reloads the dashboard.
     Delete: () => {
-        apz.toggleModal({ targetId: DP + "pu_mdl_1" });
+        apz.toggleModal({ targetId: Constants.ID_DASHBOARD + "pu_mdl_1" });
 
         apz.server.callServer({
             appId: apz.appId,

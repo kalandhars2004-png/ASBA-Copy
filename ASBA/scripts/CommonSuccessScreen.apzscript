@@ -14,8 +14,13 @@
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const CSS_P = "ASBA__CommonSuccessScreen__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_COMMON_SUCCESS = Constants.ID_COMMON_SUCCESS || "ASBA__CommonSuccessScreen__";
 
 apz.app.CommonSuccessScreen = {
 
@@ -61,16 +66,16 @@ apz.app.CommonSuccessScreen = {
         ];
 
         divs.forEach((name) => {
-            let elm = document.getElementById(CSS_P + name);
+            let elm = document.getElementById(Constants.ID_COMMON_SUCCESS + name);
 
             if (!elm) {
                 return;
             }
 
             if (ids.indexOf(name) >= 0) {
-                apz.show(CSS_P + name);
+                apz.show(Constants.ID_COMMON_SUCCESS + name);
             } else {
-                apz.hide(CSS_P + name);
+                apz.hide(Constants.ID_COMMON_SUCCESS + name);
             }
         });
     }
@@ -86,7 +91,7 @@ apz.app.onLoad_CommonSuccessScreen = () => {
     let from = apz.app.successFrom || "";
 
     let paint = (id, value) => {
-        let elm = document.getElementById(CSS_P + id);
+        let elm = document.getElementById(Constants.ID_COMMON_SUCCESS + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

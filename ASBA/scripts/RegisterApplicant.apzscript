@@ -6,8 +6,7 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const RAP_P = "ASBA__RegisterApplicant__";
+// Element IDs come from window.Constants (see Constants.apzscript).
 
 // MOCK CIF block (gr_row_14). No interface is attached to this
 // screen, so onLoad paints these values from here. Edit freely.
@@ -23,6 +22,12 @@ const mockCifData = {
     priority: "High"
 };
 
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_REGISTER_APPLICANT = Constants.ID_REGISTER_APPLICANT || "ASBA__RegisterApplicant__";
+
 apz.app.RegisterApplicant = {
 
     // Back to the dashboard without saving.
@@ -33,16 +38,16 @@ apz.app.RegisterApplicant = {
     // Collects ct_lst_9 fields + the CIF mock block into the
     // shared global, then moves to RegistrationReviewandConfirm.
     confirm: () => {
-        let nickname = apz.getElmValue(RAP_P + "el_inp_1");
-        let applicantName = apz.getElmValue(RAP_P + "el_inp_2");
+        let nickname = apz.getElmValue(Constants.ID_REGISTER_APPLICANT + "el_inp_1");
+        let applicantName = apz.getElmValue(Constants.ID_REGISTER_APPLICANT + "el_inp_2");
 
         // Client ID input (converted from label in the designer).
         // Falls back to the mock value when left blank.
-        let clientIdElm = apz.getElmValue(RAP_P + "el_txt_41");
+        let clientIdElm = apz.getElmValue(Constants.ID_REGISTER_APPLICANT + "el_txt_41");
 
         // Depository Type (NSDL / CDSL radio).
         let selectedRadio = document.querySelector(
-            'input[name="' + RAP_P + 'el_rdo_1_"]:checked'
+            'input[name="' + Constants.ID_REGISTER_APPLICANT + 'el_rdo_1_"]:checked'
         );
 
         let depositoryType = "";
@@ -63,12 +68,12 @@ apz.app.RegisterApplicant = {
         // value directly - apz.getElmValue returns "" unless an
         // option was explicitly picked (platform only reads
         // li.is-selected).
-        let priorityElm = document.getElementById(RAP_P + "el_txt_45");
+        let priorityElm = document.getElementById(Constants.ID_REGISTER_APPLICANT + "el_txt_45");
         let priority = (priorityElm && priorityElm.value) ||
             mockCifData.priority;
 
         // Declaration checkbox (el_bdg_4).
-        let declElm = document.getElementById(RAP_P + "el_bdg_4");
+        let declElm = document.getElementById(Constants.ID_REGISTER_APPLICANT + "el_bdg_4");
         let declaration = declElm ? !!declElm.checked : false;
 
         // gr_row_14 block: read whatever is currently displayed
@@ -105,23 +110,23 @@ apz.app.RegisterApplicant = {
     // have no DP ID, so its row is hidden; NSDL shows it back.
     depositoryChanged: () => {
         let selectedRadio = document.querySelector(
-            'input[name="' + RAP_P + 'el_rdo_1_"]:checked'
+            'input[name="' + Constants.ID_REGISTER_APPLICANT + 'el_rdo_1_"]:checked'
         );
 
         let depo = selectedRadio ?
             (selectedRadio.getAttribute("aria-label") || "") : "";
 
         if (depo === "CDSL") {
-            apz.hide(RAP_P + "sc_col_71_li");
+            apz.hide(Constants.ID_REGISTER_APPLICANT + "sc_col_71_li");
         } else {
-            apz.show(RAP_P + "sc_col_71_li");
+            apz.show(Constants.ID_REGISTER_APPLICANT + "sc_col_71_li");
         }
     },
 
     // Paints the gr_row_14 mock block (CIF / Corporate / PAN / KYC).
     paintCifBlock: () => {
         let paint = (id, value) => {
-            let elm = document.getElementById(RAP_P + id);
+            let elm = document.getElementById(Constants.ID_REGISTER_APPLICANT + id);
             if (elm) {
                 elm.textContent = value || "";
             }
@@ -139,7 +144,7 @@ apz.app.RegisterApplicant = {
     // so future live data passes through with no code change.
     readCifBlock: () => {
         let read = (id, fallback) => {
-            let elm = document.getElementById(RAP_P + id);
+            let elm = document.getElementById(Constants.ID_REGISTER_APPLICANT + id);
             let shown = elm ? elm.textContent.trim() : "";
             return shown || fallback || "";
         };

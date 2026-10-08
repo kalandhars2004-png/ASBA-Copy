@@ -11,8 +11,13 @@
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const CRP_P = "ASBA__CommonReviewPage__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_COMMON_REVIEW = Constants.ID_COMMON_REVIEW || "ASBA__CommonReviewPage__";
 
 apz.app.CommonReviewPage = {
 
@@ -89,16 +94,16 @@ apz.app.CommonReviewPage = {
         ];
 
         divs.forEach((name) => {
-            let elm = document.getElementById(CRP_P + name);
+            let elm = document.getElementById(Constants.ID_COMMON_REVIEW + name);
 
             if (!elm) {
                 return;
             }
 
             if (ids.indexOf(name) >= 0) {
-                apz.show(CRP_P + name);
+                apz.show(Constants.ID_COMMON_REVIEW + name);
             } else {
-                apz.hide(CRP_P + name);
+                apz.hide(Constants.ID_COMMON_REVIEW + name);
             }
         });
     }
@@ -117,7 +122,7 @@ apz.app.onLoad_CommonReviewPage = () => {
     let from = apz.app.reviewFrom || "";
 
     let paint = (id, value) => {
-        let elm = document.getElementById(CRP_P + id);
+        let elm = document.getElementById(Constants.ID_COMMON_REVIEW + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

@@ -8,8 +8,13 @@
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const WD_P = "ASBA__Withdraw__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_WITHDRAW = Constants.ID_WITHDRAW || "ASBA__Withdraw__";
 
 apz.app.Withdraw = {
 
@@ -22,11 +27,11 @@ apz.app.Withdraw = {
     },
 
     OpenWithdrawPopup: () => {
-        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
+        apz.toggleModal({ targetId: Constants.ID_WITHDRAW + "pu_mdl_2" });
     },
 
     Cancel: () => {
-        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
+        apz.toggleModal({ targetId: Constants.ID_WITHDRAW + "pu_mdl_2" });
     },
 
     // Freezes a request id + timestamp, then moves to
@@ -46,7 +51,7 @@ apz.app.Withdraw = {
                 ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds())
         };
 
-        apz.toggleModal({ targetId: WD_P + "pu_mdl_2" });
+        apz.toggleModal({ targetId: Constants.ID_WITHDRAW + "pu_mdl_2" });
 
         // All success landings go through the common screen.
         // successFrom tells it which div to show + paint.
@@ -71,7 +76,7 @@ apz.app.onLoad_Withdraw = () => {
     let app = apz.app.selectedApplication || {};
 
     let paint = (id, value) => {
-        let elm = document.getElementById(WD_P + id);
+        let elm = document.getElementById(Constants.ID_WITHDRAW + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

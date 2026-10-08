@@ -6,8 +6,13 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const EAP_P = "ASBA__EditApplicant__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_EDIT_APPLICANT = Constants.ID_EDIT_APPLICANT || "ASBA__EditApplicant__";
 
 apz.app.EditApplicant = {
 
@@ -22,17 +27,17 @@ apz.app.EditApplicant = {
         let rec = apz.app.editApplicant || {};
 
         let text = (id) => {
-            let elm = document.getElementById(EAP_P + id);
+            let elm = document.getElementById(Constants.ID_EDIT_APPLICANT + id);
             return elm ? elm.textContent.trim() : "";
         };
 
         let val = (id) => {
-            let elm = document.getElementById(EAP_P + id);
+            let elm = document.getElementById(Constants.ID_EDIT_APPLICANT + id);
             return elm ? (elm.value || "") : "";
         };
 
-        let prioElm = document.getElementById(EAP_P + "el_dpd_5");
-        let declElm = document.getElementById(EAP_P + "el_cbx_3");
+        let prioElm = document.getElementById(Constants.ID_EDIT_APPLICANT + "el_dpd_5");
+        let declElm = document.getElementById(Constants.ID_EDIT_APPLICANT + "el_cbx_3");
 
         // Request id + approved timestamp, same scheme as add flow.
         let now = new Date();
@@ -87,14 +92,14 @@ apz.app.onLoad_EditApplicant = () => {
     }
 
     let setText = (id, value) => {
-        let elm = document.getElementById(EAP_P + id);
+        let elm = document.getElementById(Constants.ID_EDIT_APPLICANT + id);
         if (elm) {
             elm.textContent = value || "";
         }
     };
 
     let setVal = (id, value) => {
-        let elm = document.getElementById(EAP_P + id);
+        let elm = document.getElementById(Constants.ID_EDIT_APPLICANT + id);
         if (elm) {
             elm.value = value || "";
         }

@@ -11,8 +11,7 @@
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const CCC_P = "ASBA__CommonCheckerCheck__";
+// Element IDs come from window.Constants (see Constants.apzscript).
 
 // Static samples (same rows as the checker queues).
 function checkerStaticSamples() {
@@ -94,6 +93,12 @@ function checkerStaticSamples() {
     };
 }
 
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_COMMON_CHECK = Constants.ID_COMMON_CHECK || "ASBA__CommonCheckerCheck__";
+
 apz.app.CommonCheckerCheck = {
 
     // All check divs on this screen (flat siblings).
@@ -106,16 +111,16 @@ apz.app.CommonCheckerCheck = {
 
     showOnly: (...ids) => {
         apz.app.CommonCheckerCheck.divs().forEach((name) => {
-            let elm = document.getElementById(CCC_P + name);
+            let elm = document.getElementById(Constants.ID_COMMON_CHECK + name);
 
             if (!elm) {
                 return;
             }
 
             if (ids.indexOf(name) >= 0) {
-                apz.show(CCC_P + name);
+                apz.show(Constants.ID_COMMON_CHECK + name);
             } else {
-                apz.hide(CCC_P + name);
+                apz.hide(Constants.ID_COMMON_CHECK + name);
             }
         });
     },
@@ -172,7 +177,7 @@ apz.app.CommonCheckerCheck = {
 
     // Checker remarks typed on this screen (shared box).
     remarks: () => {
-        let elm = document.getElementById(CCC_P + "el_inp_2");
+        let elm = document.getElementById(Constants.ID_COMMON_CHECK + "el_inp_2");
         return elm ? (elm.value || "").trim() : "";
     },
 
@@ -254,7 +259,7 @@ apz.app.onLoad_CommonCheckerCheck = () => {
     let req = apz.app.CommonCheckerCheck.resolve(div);
 
     let paint = (id, value) => {
-        let elm = document.getElementById(CCC_P + id);
+        let elm = document.getElementById(Constants.ID_COMMON_CHECK + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

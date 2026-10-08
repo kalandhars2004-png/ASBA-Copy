@@ -1,0 +1,121 @@
+// ==============================
+// ASBA CONSTANTS
+// Project-wide shared IDs, patterns and helpers.
+// Modeled on the CorpUser constant.apzscript pattern:
+// window.Constants = (() => { ... return { ... }; })();
+// NOTE: attach this file to every screen in the designer
+// (screen script list) - screens load only their own script,
+// so nothing here runs until it is attached. Until then, the
+// per-screen prefix consts stay as the single source of truth.
+// ==============================
+
+window.Constants = (() => {
+
+    /**************** Screen DOM id prefixes *************************/
+    const ID_DASHBOARD = "ASBA__dashboard__";
+    const ID_ADD_APPLICANT = "ASBA__AddApplicantAndDemat__";
+    const ID_REGISTER_APPLICANT = "ASBA__RegisterApplicant__";
+    const ID_EDIT_APPLICANT = "ASBA__EditApplicant__";
+    const ID_APPLY_PAGE = "ASBA__ApplyPage__";
+    const ID_VIEW = "ASBA__View__";
+    const ID_WITHDRAW = "ASBA__Withdraw__";
+    const ID_COMMON_SUCCESS = "ASBA__CommonSuccessScreen__";
+    const ID_COMMON_REVIEW = "ASBA__CommonReviewPage__";
+    const ID_COMMON_CHECK = "ASBA__CommonCheckerCheck__";
+    const ID_COMMON_CHECK_SUCCESS = "ASBA__CommonCheckerSuccess__";
+    const ID_COMMON_CHECK_REJECT = "ASBA__CommonCheckerReject__";
+
+    /**************** Regex patterns *************************/
+    const ASBAPattern = {};
+    ASBAPattern.pan = "[A-Z]{5}[0-9]{4}[A-Z]?";
+    ASBAPattern.nickname = "^[a-zA-Z0-9 ]*$";
+    ASBAPattern.amount = "^[0-9.,]+$";
+    ASBAPattern.clientId = "^[0-9]+$";
+
+    /**************** Request stamp (ASBA-YYYYMMDD-HHMMSS-XXXX + display datetime) *************************/
+    const stampRequest = (tag) => {
+        let now = new Date();
+        let pad = (n) => String(n).padStart(2, "0");
+
+        return {
+            requestId:
+                "ASBA-" + (tag ? tag + "-" : "") +
+                now.getFullYear() + pad(now.getMonth() + 1) +
+                pad(now.getDate()) + "-" + pad(now.getHours()) +
+                pad(now.getMinutes()) + pad(now.getSeconds()) + "-" +
+                Math.floor(1000 + Math.random() * 9000),
+            initiatedDateTime:
+                pad(now.getDate()) + "-" + pad(now.getMonth() + 1) +
+                "-" + now.getFullYear() + " " + pad(now.getHours()) +
+                ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds())
+        };
+    };
+
+    /**************** Paint helper (text into an element by id, blanks safe) *************************/
+    const paintText = (id, value) => {
+        let elm = document.getElementById(id);
+
+        if (elm) {
+            elm.textContent = (value === undefined || value === null) ? "" : String(value);
+        }
+    };
+
+    /**************** Block Amount: sum of parseable bid amounts, else first, else blank *************************/
+    const blockAmountOf = (bids) => {
+        let rows = bids || [];
+        let total = 0;
+        let parsed = 0;
+
+        rows.forEach((bid) => {
+            let n = parseFloat(String(bid.amount || "").replace(/[^0-9.]/g, ""));
+
+            if (!isNaN(n)) {
+                total += n;
+                parsed++;
+            }
+        });
+
+        if (parsed > 0) {
+            return String(Math.round(total * 100) / 100);
+        }
+
+        return rows.length ? (rows[0].amount || "") : "";
+    };
+
+    /**************** Visibility helpers (same mechanism as apz.show/hide) *************************/
+    const showOnly = (prefix, names, visible) => {
+        names.forEach((name) => {
+            let elm = document.getElementById(prefix + name);
+
+            if (!elm) {
+                return;
+            }
+
+            if (visible.indexOf(name) >= 0) {
+                apz.show(prefix + name);
+            } else {
+                apz.hide(prefix + name);
+            }
+        });
+    };
+
+    return {
+        ID_DASHBOARD,
+        ID_ADD_APPLICANT,
+        ID_REGISTER_APPLICANT,
+        ID_EDIT_APPLICANT,
+        ID_APPLY_PAGE,
+        ID_VIEW,
+        ID_WITHDRAW,
+        ID_COMMON_SUCCESS,
+        ID_COMMON_REVIEW,
+        ID_COMMON_CHECK,
+        ID_COMMON_CHECK_SUCCESS,
+        ID_COMMON_CHECK_REJECT,
+        ASBAPattern,
+        stampRequest,
+        paintText,
+        blockAmountOf,
+        showOnly
+    }
+})();

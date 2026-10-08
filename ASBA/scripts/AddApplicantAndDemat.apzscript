@@ -6,8 +6,13 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const AAD_P = "ASBA__AddApplicantAndDemat__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_ADD_APPLICANT = Constants.ID_ADD_APPLICANT || "ASBA__AddApplicantAndDemat__";
 
 apz.app.AddApplicantAndDemat = {
 
@@ -19,15 +24,15 @@ apz.app.AddApplicantAndDemat = {
     // Validates the form, stores it globally for the Review and
     // Success screens, then moves to AddApplicantReviewAndConfirm.
     Continue: () => {
-        let nickname = apz.getElmValue(AAD_P + "el_txa_2");
-        let pan = apz.getElmValue(AAD_P + "el_txa_3");
-        let dpId = apz.getElmValue(AAD_P + "el_txa_4");
-        let applicantName = apz.getElmValue(AAD_P + "el_txa_5");
-        let clientId = apz.getElmValue(AAD_P + "el_txa_7");
+        let nickname = apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_txa_2");
+        let pan = apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_txa_3");
+        let dpId = apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_txa_4");
+        let applicantName = apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_txa_5");
+        let clientId = apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_txa_7");
 
         // Get selected Depository Type (NSDL / CDSL radio).
         let selectedRadio = document.querySelector(
-            'input[name="' + AAD_P + 'el_txa_6_"]:checked'
+            'input[name="' + Constants.ID_ADD_APPLICANT + 'el_txa_6_"]:checked'
         );
 
         let depositoryType = "";
@@ -41,11 +46,11 @@ apz.app.AddApplicantAndDemat = {
         // explicitly picked (platform only reads li.is-selected),
         // while the input always shows the current selection
         // (default "High" from the design).
-        let priorityElm = document.getElementById(AAD_P + "el_dpd_1");
+        let priorityElm = document.getElementById(Constants.ID_ADD_APPLICANT + "el_dpd_1");
         let priority = (priorityElm && priorityElm.value) ||
-            apz.getElmValue(AAD_P + "el_dpd_1");
+            apz.getElmValue(Constants.ID_ADD_APPLICANT + "el_dpd_1");
 
-        let declarationElm = document.getElementById(AAD_P + "el_cbx_1");
+        let declarationElm = document.getElementById(Constants.ID_ADD_APPLICANT + "el_cbx_1");
         let declaration = declarationElm ? !!declarationElm.checked : false;
 
         // Mandatory check before leaving the screen.

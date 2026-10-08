@@ -9,8 +9,13 @@
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const CCR_P = "ASBA__CommonCheckerReject__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_COMMON_CHECK_REJECT = Constants.ID_COMMON_CHECK_REJECT || "ASBA__CommonCheckerReject__";
 
 apz.app.CommonCheckerReject = {
 
@@ -38,16 +43,16 @@ apz.app.onLoad_CommonCheckerReject = () => {
     }
 
     divs.forEach((name) => {
-        let elm = document.getElementById(CCR_P + name);
+        let elm = document.getElementById(Constants.ID_COMMON_CHECK_REJECT + name);
 
         if (!elm) {
             return;
         }
 
         if (name === div) {
-            apz.show(CCR_P + name);
+            apz.show(Constants.ID_COMMON_CHECK_REJECT + name);
         } else {
-            apz.hide(CCR_P + name);
+            apz.hide(Constants.ID_COMMON_CHECK_REJECT + name);
         }
     });
 
@@ -67,7 +72,7 @@ apz.app.onLoad_CommonCheckerReject = () => {
     };
 
     let paint = (id, value) => {
-        let elm = document.getElementById(CCR_P + id);
+        let elm = document.getElementById(Constants.ID_COMMON_CHECK_REJECT + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }

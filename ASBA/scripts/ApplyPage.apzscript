@@ -6,8 +6,13 @@
 // and rebuild; script-only changes must reuse the same IDs.
 // ==============================
 
-// DOM id prefix for every element on this screen.
-const APP_P = "ASBA__ApplyPage__";
+// Element IDs come from window.Constants (see Constants.apzscript).
+
+// Fallback ID if Constants.js failed to load (stale or
+// partial deploy serves mismatched files). Real Constants
+// overwrites this when it loads; harmless when it ran first.
+var Constants = window.Constants || {};
+Constants.ID_APPLY_PAGE = Constants.ID_APPLY_PAGE || "ASBA__ApplyPage__";
 
 apz.app.ApplyPage = {
 
@@ -24,7 +29,7 @@ apz.app.ApplyPage = {
         // Dropdown reads use the visible input value (same reason
         // as the applicant form - getElmValue stays "" otherwise).
         let visVal = (id) => {
-            let elm = document.getElementById(APP_P + id);
+            let elm = document.getElementById(Constants.ID_APPLY_PAGE + id);
             return (elm && elm.value) || "";
         };
 
@@ -37,10 +42,10 @@ apz.app.ApplyPage = {
 
         // Priority dropdown: visible input value (same reason as
         // the applicant form - getElmValue stays "" otherwise).
-        let prioElm = document.getElementById(APP_P + "el_dpd_5");
+        let prioElm = document.getElementById(Constants.ID_APPLY_PAGE + "el_dpd_5");
         apz.app.applyPriority = (prioElm && prioElm.value) || "";
 
-        let declElm = document.getElementById(APP_P + "el_cbx_1");
+        let declElm = document.getElementById(Constants.ID_APPLY_PAGE + "el_cbx_1");
         apz.app.applyDeclaration = declElm ? !!declElm.checked : false;
 
         // All review landings go through the common page.
@@ -53,7 +58,7 @@ apz.app.ApplyPage = {
     // Clones the last bid row of ct_lst_35 for one more bid.
     // Cloned ids get an _r<N> suffix so getElementById stays unique.
     addBidRow: (element) => {
-        let list = document.getElementById(APP_P + "ct_lst_35");
+        let list = document.getElementById(Constants.ID_APPLY_PAGE + "ct_lst_35");
 
         if (!list) {
             return;
@@ -114,7 +119,7 @@ apz.app.ApplyPage = {
 
     // Reads every bid row into apz.app.bidRows for the Review screen.
     collectBids: () => {
-        let list = document.getElementById(APP_P + "ct_lst_35");
+        let list = document.getElementById(Constants.ID_APPLY_PAGE + "ct_lst_35");
         let bids = [];
 
         if (list) {
@@ -165,7 +170,7 @@ apz.app.onLoad_ApplyPage = () => {
     }
 
     let paint = (id, value) => {
-        let elm = document.getElementById(APP_P + id);
+        let elm = document.getElementById(Constants.ID_APPLY_PAGE + id);
         if (elm) {
             elm.textContent = (value === undefined || value === null) ? "" : String(value);
         }
