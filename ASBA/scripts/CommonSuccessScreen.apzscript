@@ -4,11 +4,13 @@
 // Single landing page for all success flows. Each Review
 // confirm sets apz.app.successFrom to its screen name; onLoad
 // shows only the matching div + footer and paints it.
-// Flows WITHOUT a div here (Edit, Checker) keep their own
-// success pages and never land on this screen.
-// Divs: ASBARegistrationDiv / AddApplicantDiv / ApplyIPODiv /
-// WithdrawDiv, footers AddApplicantFooterDiv /
-// WithdrawFooterDiv / ApplyIPOFooterDiv.
+// Flows WITHOUT a div here keep their own pages.
+// Divs (all top-level siblings): ASBARegistrationDiv /
+// AddApplicantDiv / AppyForIPODiv / WithdrawDiv /
+// EditSuccessDiv / CheckerIPOsuccespageDiv /
+// CheckerAddapplicantSuccesspageDiv + matching footers.
+// Shared header (el_txt_218/220) paints Request ID / Date
+// where the flow provides them.
 // All element IDs below are design IDs - do NOT rename them here.
 // ==============================
 
@@ -44,49 +46,28 @@ apz.app.CommonSuccessScreen = {
         apz.launchScreen({ appId: apz.appId, scr: "Withdraw" });
     },
 
-    // Shows only the given divs. Ancestor-aware: several content
-    // divs are nested (ApplyIPODiv inside AddApplicantDiv inside
-    // ASBARegistrationDiv; EditSuccessDiv inside WithdrawDiv), so
-    // managed ancestors of shown divs are shown too - otherwise a
-    // hidden ancestor would swallow the visible child.
-    // NOTE: keep CSS_PARENTS in sync if the designer restructures.
+    // Shows only the given divs. All content + footer divs are
+    // top-level siblings - no ancestor handling needed.
+    // NOTE: keep this list in sync if the designer restructures.
     showOnly: (...ids) => {
-        let parents = {
-            "ASBARegistrationDiv": null,
-            "ASBARegistrationFooterDiv": null,
-            "AddApplicantDiv": null,
-            "AddApplicantFooterDiv": null,
-            "AppyForIPODiv": null,
-            "AppyForIPOFooterDiv": null,
-            "WithdrawDiv": null,
-            "WithdrawFooterDiv": null,
-            "EditSuccessDiv": null,
-            "EditSuccessFooterDiv": null,
-            "CheckerIPOsuccespageDiv": null,
-            "CheckerIPOsuccespageFooterDiv": null,
-            "CheckerAddapplicantSuccesspageDiv": null,
-            "CheckerAddapplicantSuccesspageFooterDiv": null
-        };
+        let divs = [
+            "ASBARegistrationDiv", "ASBARegistrationFooterDiv",
+            "AddApplicantDiv", "AddApplicantFooterDiv",
+            "AppyForIPODiv", "AppyForIPOFooterDiv",
+            "WithdrawDiv", "WithdrawFooterDiv",
+            "EditSuccessDiv", "EditSuccessFooterDiv",
+            "CheckerIPOsuccespageDiv", "CheckerIPOsuccespageFooterDiv",
+            "CheckerAddapplicantSuccesspageDiv", "CheckerAddapplicantSuccesspageFooterDiv"
+        ];
 
-        let show = {};
-
-        ids.forEach((name) => {
-            let cursor = name;
-
-            while (cursor) {
-                show[cursor] = true;
-                cursor = parents[cursor];
-            }
-        });
-
-        Object.keys(parents).forEach((name) => {
+        divs.forEach((name) => {
             let elm = document.getElementById(CSS_P + name);
 
             if (!elm) {
                 return;
             }
 
-            if (show[name]) {
+            if (ids.indexOf(name) >= 0) {
                 apz.show(CSS_P + name);
             } else {
                 apz.hide(CSS_P + name);
@@ -117,68 +98,61 @@ apz.app.onLoad_CommonSuccessScreen = () => {
         apz.app.CommonSuccessScreen.showOnly("ASBARegistrationDiv", "ASBARegistrationFooterDiv");
 
         // Nickname / Applicant Name / CIF ID.
-        paint("el_txt_7_txtcnt", data.nickname);
-        paint("el_txt_8_txtcnt", data.applicantName);
-        paint("el_txt_9_txtcnt", data.cifId || data.clientId);
+        paint("el_txt_199_txtcnt", data.nickname);
+        paint("el_txt_200_txtcnt", data.applicantName);
+        paint("el_txt_201_txtcnt", data.cifId || data.clientId);
 
         // Corporate ID / Corporate Name / PAN.
-        paint("el_txt_13_txtcnt", data.corporateId);
-        paint("el_txt_14_txtcnt", data.corporateName);
-        paint("el_txt_15_txtcnt", data.pan);
+        paint("el_txt_205_txtcnt", data.corporateId);
+        paint("el_txt_206_txtcnt", data.corporateName);
+        paint("el_txt_207_txtcnt", data.pan);
 
         // Depository Type / DP ID / Client ID.
-        paint("el_txt_19_txtcnt", data.depositoryType);
-        paint("el_txt_20_txtcnt", data.dpId);
-        paint("el_txt_21_txtcnt", data.clientId);
+        paint("el_txt_211_txtcnt", data.depositoryType);
+        paint("el_txt_212_txtcnt", data.dpId);
+        paint("el_txt_213_txtcnt", data.clientId);
 
         // Priority.
-        paint("el_txt_24_txtcnt", data.priority);
+        paint("el_txt_216_txtcnt", data.priority);
     } else if (from === "AddApplicantReviewAndConfirm") {
         let data = apz.app.applicationData || {};
 
         apz.app.CommonSuccessScreen.showOnly("AddApplicantDiv", "AddApplicantFooterDiv");
 
+        // Shared header: Request ID / Initiated Date & Time.
+        paint("el_txt_218_txtcnt", data.requestId);
+        paint("el_txt_220_txtcnt", data.initiatedDateTime);
+
         // Nickname / Applicant Name / CIF ID.
-        paint("el_txt_29_txtcnt", data.nickname);
-        paint("el_txt_30_txtcnt", data.applicantName);
-        paint("el_txt_31_txtcnt", data.clientId);
+        paint("el_txt_225_txtcnt", data.nickname);
+        paint("el_txt_226_txtcnt", data.applicantName);
+        paint("el_txt_227_txtcnt", data.clientId);
 
         // Depository Type / DP ID / Client ID.
-        paint("el_txt_35_txtcnt", data.depositoryType);
-        paint("el_txt_36_txtcnt", data.dpId);
-        paint("el_txt_37_txtcnt", data.clientId);
+        paint("el_txt_231_txtcnt", data.depositoryType);
+        paint("el_txt_232_txtcnt", data.dpId);
+        paint("el_txt_233_txtcnt", data.clientId);
 
         // Priority.
-        paint("el_txt_40_txtcnt", data.priority);
+        paint("el_txt_236_txtcnt", data.priority);
     } else if (from === "ApplyReview") {
         let picked = apz.app.applyApplicant || {};
-        let applicant = apz.app.applicationData || {};
-        let ipo = apz.app.selectedIPO || {};
+        let apply = apz.app.applyData || {};
         let bids = apz.app.bidRows || [];
         let firstBid = bids.length ? bids[0] : {};
 
         apz.app.CommonSuccessScreen.showOnly("AppyForIPODiv", "AppyForIPOFooterDiv");
 
-        // Nickname (picked) / Applicant Name / PAN (added record).
-        paint("el_txt_144_txtcnt", picked.nickname || applicant.applicantName);
-        paint("el_txt_146_txtcnt", applicant.applicantName);
-        paint("el_txt_148_txtcnt", applicant.pan);
+        // Shared header: Request ID / Initiated Date & Time.
+        paint("el_txt_218_txtcnt", apply.requestId);
+        paint("el_txt_220_txtcnt", apply.initiatedDateTime);
 
-        // Depository Type / DP ID / Client ID (added record).
-        paint("el_txt_150_txtcnt", applicant.depositoryType);
-        paint("el_txt_152_txtcnt", applicant.dpId);
-        paint("el_txt_154_txtcnt", applicant.clientId);
-
-        // Investor Type / Debit Account / IPO Name.
-        paint("el_txt_156_txtcnt", picked.investorType);
-        paint("el_txt_158_txtcnt", picked.account);
-        paint("el_txt_160_txtcnt", ipo["IPO Details"]);
-
-        // First bid row (No / Quantity / Price / Amount).
-        paint("el_txt_166_txtcnt", firstBid.no);
-        paint("el_txt_167_txtcnt", firstBid.quantity);
-        paint("el_txt_168_txtcnt", firstBid.price);
-        paint("el_txt_169_txtcnt", firstBid.amount);
+        // Nickname + first bid (No cell omitted by design -
+        // quantity / price / amount only).
+        paint("el_txt_240_txtcnt", picked.nickname || applicant.applicantName);
+        paint("el_txt_241_txtcnt", firstBid.quantity);
+        paint("el_txt_242_txtcnt", firstBid.price);
+        paint("el_txt_243_txtcnt", firstBid.amount);
 
         // Block Amount: sum of parseable bid amounts, else first
         // amount, else blank (local rule - no cross-screen call).
@@ -203,59 +177,73 @@ apz.app.onLoad_CommonSuccessScreen = () => {
             }
         }
 
-        paint("el_txt_171_txtcnt", blockAmount);
-        paint("el_txt_172_txtcnt", blockAmount);
-        paint("el_txt_175_txtcnt", apz.app.applyPriority);
+        paint("el_txt_245_txtcnt", blockAmount);
+        paint("el_txt_249_txtcnt", apz.app.applyPriority);
     } else if (from === "Withdraw") {
+        let app = apz.app.selectedApplication || {};
+        let wd = apz.app.withdrawData || {};
+
         apz.app.CommonSuccessScreen.showOnly("WithdrawDiv", "WithdrawFooterDiv");
+
+        // Shared header: Request ID / Initiated Date & Time.
+        paint("el_txt_218_txtcnt", wd.requestId);
+        paint("el_txt_220_txtcnt", wd.initiatedDateTime);
 
         // NOTE: the entry carries an application record (no applicant
         // fields), so applicant cells stay blank until applicant
-        // context rides along (same gap as WithdrawSuccess).
-        paint("el_txt_56_txtcnt", "");
-        paint("el_txt_58_txtcnt", "");
-        paint("el_txt_60_txtcnt", "");
-        paint("el_txt_62_txtcnt", "");
-        paint("el_txt_64_txtcnt", "");
-        paint("el_txt_66_txtcnt", "");
-        paint("el_txt_69_txtcnt", "");
+        // context rides along.
+        paint("el_txt_255_txtcnt", "");
+        paint("el_txt_256_txtcnt", app["IPO Details"]);
+        paint("el_txt_257_txtcnt", app["Application ID"]);
+        paint("el_txt_258_txtcnt", app["BID Amount"]);
+
+        // Block Amount.
+        paint("el_txt_260_txtcnt", app["BID Amount"]);
     } else if (from === "EditedApplicantReview") {
         let data = apz.app.editData || {};
 
         apz.app.CommonSuccessScreen.showOnly("EditSuccessDiv", "EditSuccessFooterDiv");
 
+        // Shared header: Request ID / Approved timestamp.
+        paint("el_txt_218_txtcnt", data.requestId);
+        paint("el_txt_220_txtcnt", data.approvedDateTime);
+
         // Applicant ID / Nickname / Applicant Name.
-        paint("el_txt_74_txtcnt", data.applicantId);
-        paint("el_txt_75_txtcnt", data.nickname);
-        paint("el_txt_76_txtcnt", data.applicantName);
+        paint("el_txt_269_txtcnt", data.applicantId);
+        paint("el_txt_270_txtcnt", data.nickname);
+        paint("el_txt_271_txtcnt", data.applicantName);
 
         // Depository Type / DP ID / Client ID.
-        paint("el_txt_80_txtcnt", data.depositoryType);
-        paint("el_txt_81_txtcnt", data.dpId);
-        paint("el_txt_82_txtcnt", data.clientId);
+        paint("el_txt_275_txtcnt", data.depositoryType);
+        paint("el_txt_276_txtcnt", data.dpId);
+        paint("el_txt_277_txtcnt", data.clientId);
 
         // PAN.
-        paint("el_txt_84_txtcnt", data.pan);
+        paint("el_txt_279_txtcnt", data.pan);
 
         // Priority.
-        paint("el_txt_91_txtcnt", data.priority);
+        paint("el_txt_286_txtcnt", data.priority);
     } else if (from === "CheckerRegistrationCheck" || from === "CheckerAddApplicantSuccess") {
         let req = apz.app.checkerDecision || {};
 
         apz.app.CommonSuccessScreen.showOnly("CheckerAddapplicantSuccesspageDiv", "CheckerAddapplicantSuccesspageFooterDiv");
 
+        // Shared header: Request ID / Initiated Date & Time.
+        paint("el_txt_218_txtcnt", req.requestId);
+        paint("el_txt_220_txtcnt", req.initiatedDateTime);
+
         // Nickname / Applicant Name / PAN.
-        paint("el_txt_96_txtcnt", req.nickname);
-        paint("el_txt_97_txtcnt", req.applicantName);
-        paint("el_txt_98_txtcnt", req.pan);
+        paint("el_txt_325_txtcnt", req.nickname);
+        paint("el_txt_326_txtcnt", req.applicantName);
+        paint("el_txt_327_txtcnt", req.pan);
 
         // Depository Type / DP ID / Client ID.
-        paint("el_txt_102_txtcnt", req.depositoryType);
-        paint("el_txt_103_txtcnt", req.dpId);
-        paint("el_txt_104_txtcnt", req.clientId);
+        paint("el_txt_331_txtcnt", req.depositoryType);
+        paint("el_txt_332_txtcnt", req.dpId);
+        paint("el_txt_333_txtcnt", req.clientId);
 
         // Priority.
-        paint("el_txt_107_txtcnt", req.priority);
+        paint("el_txt_336_txtcnt", req.priority);
     } else if (from === "CheckerIPOcheck") {
         let req = apz.app.checkerDecision || {};
         let bids = req.bids || [];
@@ -263,31 +251,35 @@ apz.app.onLoad_CommonSuccessScreen = () => {
 
         apz.app.CommonSuccessScreen.showOnly("CheckerIPOsuccespageDiv", "CheckerIPOsuccespageFooterDiv");
 
+        // Shared header: Request ID / Initiated Date & Time.
+        paint("el_txt_218_txtcnt", req.requestId);
+        paint("el_txt_220_txtcnt", req.initiatedDateTime);
+
         // Nickname / Applicant Name / PAN.
-        paint("el_txt_110_txtcnt", req.nickname);
-        paint("el_txt_112_txtcnt", req.applicantName);
-        paint("el_txt_114_txtcnt", req.pan);
+        paint("el_txt_289_txtcnt", req.nickname);
+        paint("el_txt_291_txtcnt", req.applicantName);
+        paint("el_txt_293_txtcnt", req.pan);
 
         // Depository Type / DP ID / Client ID.
-        paint("el_txt_116_txtcnt", req.depositoryType);
-        paint("el_txt_118_txtcnt", req.dpId);
-        paint("el_txt_120_txtcnt", req.clientId);
+        paint("el_txt_295_txtcnt", req.depositoryType);
+        paint("el_txt_297_txtcnt", req.dpId);
+        paint("el_txt_299_txtcnt", req.clientId);
 
         // Investor Type / Debit Account / IPO Name.
-        paint("el_txt_122_txtcnt", req.investorType);
-        paint("el_txt_124_txtcnt", req.debitAccount);
-        paint("el_txt_126_txtcnt", req.ipoName);
+        paint("el_txt_301_txtcnt", req.investorType);
+        paint("el_txt_303_txtcnt", req.debitAccount);
+        paint("el_txt_305_txtcnt", req.ipoName);
 
         // First bid row (No / Quantity / Price / Amount).
-        paint("el_txt_132_txtcnt", firstBid.no);
-        paint("el_txt_133_txtcnt", firstBid.quantity);
-        paint("el_txt_134_txtcnt", firstBid.price);
-        paint("el_txt_135_txtcnt", firstBid.amount);
+        paint("el_txt_311_txtcnt", firstBid.no);
+        paint("el_txt_312_txtcnt", firstBid.quantity);
+        paint("el_txt_313_txtcnt", firstBid.price);
+        paint("el_txt_314_txtcnt", firstBid.amount);
 
         // Block Amount + Priority.
-        paint("el_txt_137_txtcnt", req.blockAmount);
-        paint("el_txt_138_txtcnt", req.blockAmount);
-        paint("el_txt_141_txtcnt", req.priority);
+        paint("el_txt_316_txtcnt", req.blockAmount);
+        paint("el_txt_317_txtcnt", req.blockAmount);
+        paint("el_txt_320_txtcnt", req.priority);
     } else {
         // Unknown entry: show the registration block as a safe default.
         apz.app.CommonSuccessScreen.showOnly("ASBARegistrationDiv", "ASBARegistrationFooterDiv");

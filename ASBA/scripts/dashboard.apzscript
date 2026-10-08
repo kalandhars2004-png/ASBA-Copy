@@ -9,7 +9,9 @@
 // DOM id prefix for every element on this screen.
 const DP = "ASBA__dashboard__";
 // Register (marketing) block vs dashboard (stats) block.
+
 const REG_DIV = DP + "gr_row_52";
+
 const DASH_DIV = DP + "gr_row_28";
 // Tab headers inside pl_tab_2 (New IPOs tab stays visible always).
 const TAB_MYAPPS = DP + "ps_pls_61_li";
@@ -110,6 +112,12 @@ apz.app.dashboard = {
 
     withdraw: () => {
         apz.launchScreen({ appId: apz.appId, scr: "Withdraw" });
+    },
+
+    // Checker entry point (CheckerNavigate button): opens the
+    // unified checker screen covering all flows.
+    checkerNavigate: () => {
+        apz.launchScreen({ appId: apz.appId, scr: "CommonCheckerCheck" });
     },
 
     // My-Applications row Action router. The row's own Action value
